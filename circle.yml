@@ -1,0 +1,17 @@
+deployment:
+ development:
+   branch: master
+   commands:
+     - git fetch --unshallow
+     - git push git@heroku.com:tower-gateway-api-development.git $CIRCLE_SHA1:refs/heads/master
+ staging:
+   branch: staging
+   commands:
+     - git fetch --unshallow
+     - git push git@heroku.com:tower-gateway-api-staging.git $CIRCLE_SHA1:refs/heads/master
+ production:
+   branch: production
+   commands:
+     - git fetch --unshallow
+     - git push git@heroku.com:tower-gateway-api-production.git $CIRCLE_SHA1:refs/heads/master
+     - bundle exec vine sync heroku tower-gateway-api-production -e production

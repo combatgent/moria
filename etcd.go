@@ -17,9 +17,9 @@ import (
 
 // EtcdAPI is an all in one etcd configuration method.
 // Config process adapted from https://github.com/coreos/etcd/tree/master/client
-func EtcdAPI() client.KeysAPI {
+func EtcdAPI(pemData string) client.KeysAPI {
 	urls := EtcdURL()
-	cfg := EtcdConfig(urls)
+	cfg := EtcdConfig(urls, pemData)
 	c, err := client.New(cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -34,8 +34,8 @@ func EtcdURL() []string {
 }
 
 // EtcdConfig creates a config objectfor the etcd api client object
-func EtcdConfig(urls []string) client.Config {
-	customTransport := generateTransport()
+func EtcdConfig(urls []string, pemData string) client.Config {
+	customTransport := generateTransport(pemData)
 	c := client.Config{
 		Endpoints:               []string{urls[0], urls[1], urls[2]},
 		Transport:               customTransport,
@@ -46,21 +46,21 @@ func EtcdConfig(urls []string) client.Config {
 	return c
 }
 
-func generateTransport() client.CancelableTransport {
+func generateTransport(pemData string) client.CancelableTransport {
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool()}
-	transport := &http.Transport{TLSClientConfig: generateTLSConfig(tlsConfig)}
+	transport := &http.Transport{TLSClientConfig: generateTLSConfig(tlsConfig, pemData)}
 	var CustomTransport client.CancelableTransport = transport
 	return CustomTransport
 }
 
-func generateTLSConfig(tlsConfig *tls.Config) *tls.Config {
-	var pemData []byte
-	if os.Getenv("GO_ENV") != "production" {
-		pemData = getPEMBytesFromFile()
-	} else {
-		pemData = []byte(os.Getenv("ETCD_CA_STRING"))
-	}
-	return appendPEM(tlsConfig, pemData)
+func generateTLSConfig(tlsConfig *tls.Config, pemData string) *tls.Config {
+	// var pemData []byte
+	// if os.Getenv("GO_ENV") != "production" {
+	// 	pemData = getPEMBytesFromFile()
+	// } else {
+	// 	pemData = []byte(os.Getenv("ETCD_CA_STRING"))
+	// }
+	return appendPEM(tlsConfig, []byte(pemData))
 }
 
 func appendPEM(tlsConfig *tls.Config, pemData []byte) *tls.Config {

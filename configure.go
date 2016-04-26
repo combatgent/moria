@@ -6,9 +6,9 @@ import (
 )
 
 // Configure Generates an Etcd api client for key retrieval
-func Configure(e string) *Exchange {
+func Configure(e string, pemData string) *Exchange {
 	Initialize()
-	etcd := EtcdAPI()
+	etcd := EtcdAPI(pemData)
 	mux := NewMux()
 	namespace := Namespace()
 	exchange := NewExchange(namespace, etcd, mux)
