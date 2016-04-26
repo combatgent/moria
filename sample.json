@@ -1,0 +1,538 @@
+[{
+    "method": "GET",
+    "path": "/health(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/happy_hour(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/promotions/:id/change_sale_price(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/cancel(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_receipt(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants/:variant_id/rma(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/addresses/:address_id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/addresses(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/apple_pay_addresses(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/adjustments(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_promo(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_store_credit(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/orders/:id/variants/:variant_id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/cart/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/complete(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/delivery(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/rmas(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_return_label(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/loyalty_points(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/welcome_coupon(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/happy_hour(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/promotions/:id/change_sale_price(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/promotions(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/promotions/:id(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/promotions/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/:id/restore(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments/picklist(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/shipments(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/shipments/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments/:id/restore(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/claim(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/ship(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/unshippable(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/shippable(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/shipping_label(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/shipments/sold_not_shipped(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/refund(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/cancel(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/fraud(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_receipt(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants/:variant_id/rma(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id/sync_newgistics_state(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/gift_cards(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards/:code/restore(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/addresses/:address_id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/addresses(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/adjustments(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/orders/:order_id/adjustments/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_promo(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_store_credit(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/orders/:id/variants/:variant_id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/cart/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/complete(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/delivery(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/order_items/:order_item_id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/rmas(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/rmas(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_return_label(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/pending_returns(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/happy_hour(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/promotions/:id/change_sale_price(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/cancel(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_receipt(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants/:variant_id/rma(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/addresses/:address_id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/addresses(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/apple_pay_addresses(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/adjustments(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_promo(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_store_credit(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/orders/:id/variants/:variant_id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/cart/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/complete(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/delivery(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/rmas(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_return_label(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/loyalty_points(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/welcome_coupon(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/happy_hour(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/promotions/:id/change_sale_price(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/promotions(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/promotions/:id(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/promotions/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/promotions/:id/restore(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments/picklist(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/shipments(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/shipments/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/shipments/:id/restore(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/claim(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/ship(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/unshippable(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/shippable(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/shipments/:id/shipping_label(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/shipments/sold_not_shipped(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/refund(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/cancel(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/fraud(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_receipt(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants/:variant_id/rma(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/orders/:id/sync_newgistics_state(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/gift_cards(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/gift_cards/:id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/gift_cards/:code/restore(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/addresses/:address_id(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/addresses(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/adjustments(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/orders/:order_id/adjustments/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_promo(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/apply_store_credit(.:format)"
+}, {
+    "method": "DELETE",
+    "path": "/:version/orders/:id/variants/:variant_id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/variants(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/digital_gift_card(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/cart/:id(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/complete(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/delivery(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/order_items/:order_item_id(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/rmas(.:format)"
+}, {
+    "method": "POST",
+    "path": "/:version/orders/:id/rmas(.:format)"
+}, {
+    "method": "PUT",
+    "path": "/:version/orders/:id/email_return_label(.:format)"
+}, {
+    "method": "GET",
+    "path": "/:version/pending_returns(.:format)"
+}]
