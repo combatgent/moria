@@ -6,9 +6,9 @@ import (
 )
 
 // Configure Generates an Etcd api client for key retrieval
-func Configure(e string, pemData string) *Exchange {
+func Configure(e string) *Exchange {
 	Initialize()
-	etcd := EtcdAPI(pemData)
+	etcd := EtcdAPI()
 	mux := NewMux()
 	namespace := Namespace()
 	exchange := NewExchange(namespace, etcd, mux)
@@ -20,7 +20,6 @@ func Configure(e string, pemData string) *Exchange {
 		exchange.Watch()
 	}()
 	return exchange
-
 }
 
 // Namespace sets a custom etcd namespace key or uses the default `services` key

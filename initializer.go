@@ -1,14 +1,16 @@
 package moria
 
-import "fmt"
+import "github.com/fatih/color"
 
 // Initialize sets environment
 func Initialize() {
 	logWelcome()
 }
 
+var pPurple = color.New(color.BgHiMagenta, color.FgBlack).PrintlnFunc()
+
 func logWelcome() {
-	fmt.Print(`
+	pPurple(`
                      ______________,-----------._____________
                     (_(_      _,-´_,-----------._´-._     _)_)
                         |   ,ˆ_,-ˆ  ___________  ´-._´.   |
