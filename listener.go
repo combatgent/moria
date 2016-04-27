@@ -12,7 +12,7 @@ func Listen(e *Exchange) {
 	// appropriate service backend.
 	port := os.Getenv("PORT")
 	log.Printf("Listening for HTTP requests on port %v", port)
-	err := http.ListenAndServe("localhost:"+port, Log(e.mux))
+	err := http.ListenAndServe(":"+port, Log(e.mux))
 	if err != nil {
 		log.Print(err)
 	}
