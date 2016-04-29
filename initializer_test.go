@@ -7,7 +7,7 @@ import (
 	// env "github.com/joho/godotenv"
 )
 
-func TestNamespace(t *testing.T) {
+func TestInitialize(t *testing.T) {
 	// env.Load(".env_test")
 	var err error
 	moria.Initialize()

@@ -23,9 +23,7 @@ var required = [...]string{
 	"GO_ENV",
 	"ETCD_USERNAME",
 	"ETCD_PASSWORD",
-	"ETCD_HOST",
-	"ETCD_PORT",
-	"ETCD_CA_PATH",
+	"ETCD_CA_STRING",
 	"ETCD_CLIENT_PEERS"}
 
 var optional = [...]string{
@@ -41,10 +39,6 @@ func Environment() string {
 	checkRequired()
 	checkOptional()
 	environment := os.Getenv("GO_ENV")
-	if environment == "" {
-		missingGoEnvironment()
-	}
-
 	return environment
 }
 
@@ -100,7 +94,7 @@ func checkRequired() {
 //  * CIRCLECI_TOKEN
 //  * CIRCLECI_USERNAME
 func checkOptional() {
-	for _, req := range required {
+	for _, req := range optional {
 		if os.Getenv(req) == "" {
 			missingOptionalValue(req)
 		}
@@ -119,22 +113,15 @@ func missingOptionalValue(v string) {
 
 func missingRequiredValue(v string) {
 	color.Set(color.FgRed)
-	log.Fatalf(
+	log.Panicf(
 		`*************************** ERROR *******************************
   UNABLE TO LOCATE/LOAD THE %s ENVIRONMENT CONFIGURATION VARIABLE`, v)
 
 }
 
-func missingGoEnvironment() {
-	color.Set(color.FgRed)
-	log.Fatalln(
-		`*************************** ERROR *******************************
-  UNABLE TO LOCATE/LOAD THE GO_ENV ENVIRONMENT CONFIGURATION VARIABLE`)
-}
-
 func invalidAuxEnvPath() {
 	color.Set(color.FgRed)
-	log.Fatalln(
+	log.Panicln(
 		`**************************** ERROR ********************************
   INVALID PATH SUPPLIED FOR AUX ENVIRONMENT PATH CONFIGURATION VARIABLE`)
 }
@@ -142,7 +129,7 @@ func invalidAuxEnvPath() {
 //
 func noEnvironmentFound() {
 	color.Set(color.FgRed)
-	log.Fatalln(
+	log.Panicln(
 		`*************************** ERROR *******************************
   UNABLE TO LOCATE/LOAD REQUIRED ENVIRONMENT CONFIGURATION VARIABLES`)
 }

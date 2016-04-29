@@ -3,12 +3,20 @@ package moria
 import (
 	"log"
 	"os"
+
+	"github.com/coreos/etcd/client"
 )
 
 // Configure Generates an Etcd api client for key retrieval
 func Configure(e string) *Exchange {
 	Initialize()
-	etcd := EtcdAPI()
+	urls := EtcdURL()
+	cfg := EtcdConfig(urls)
+	c, err := New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	etcd := client.NewKeysAPI(c)
 	mux := NewMux()
 	namespace := Namespace()
 	exchange := NewExchange(namespace, etcd, mux)

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/coreos/etcd/client"
 	"github.com/fatih/color"
@@ -34,11 +33,20 @@ func NewExchange(namespace string, client client.KeysAPI, mux *Mux) *Exchange {
 
 // Init fetches service information from etcd and initializes the exchange.
 func (exchange *Exchange) Init() error {
+	defer func() {
+		if perr := recover(); perr != nil {
+			var ok bool
+			perr, ok = perr.(error)
+			if !ok {
+				fmt.Errorf("Panicking: %v", perr)
+			}
+		}
+	}()
 	options := EtcdGetOptions()
 	ctx := context.TODO()
 	response, err := exchange.client.Get(ctx, exchange.namespace, options)
 	if err != nil {
-		checkEtcdErrors(err)
+		CheckEtcdErrors(err)
 	}
 	if response.Node.Nodes.Len() > 0 {
 		checkNodes(exchange, response.Node)
@@ -62,14 +70,16 @@ func checkNodes(exchange *Exchange, node *client.Node) {
 					}
 				}
 			}()
-			pSuccess("Found Matching Key: %v\n", node.Key)
+			pSuccess("Found Matching Key: %v\nWith Value:%v\n", node.Key, node.Value)
 			service := exchange.load(node.Value)
 			service.ID = ID(node.Key)
 			host := Host(node.Key)
 			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
-			checkEtcdErrors(err)
-			service.Address = resp.Node.Nodes[0].Value
-			exchange.Register(service)
+			CheckEtcdErrors(err)
+			for _, node := range resp.Node.Nodes {
+				service.Address = node.Value
+				exchange.Register(service)
+			}
 		}
 		if node.Nodes.Len() > 0 {
 			checkNodes(exchange, node)
@@ -101,13 +111,23 @@ func (exchange *Exchange) Watch() {
 		select {
 		case response := <-receiver:
 			if response.Action == "set" {
-				service := exchange.load(response.Node.Value)
-				exchange.Register(service)
+				checkNodes(exchange, response.Node)
 			} else if response.Action == "delete" {
-				namespace := "/" + exchange.namespace + "/"
-				id := strings.TrimPrefix(response.Node.Key, namespace)
-				service := exchange.services[id]
-				exchange.Unregister(service)
+				node := response.Node
+				pInfo("Checking Key: %v\n", node.Key)
+				if MatchEnv(response.Node.Key) {
+					defer func() {
+						if perr := recover(); perr != nil {
+							var ok bool
+							perr, ok = perr.(error)
+							if !ok {
+								fmt.Errorf("Panicking: %v", perr)
+							}
+						}
+					}()
+					service := exchange.services[ID(response.Node.Key)]
+					exchange.Unregister(service)
+				}
 			}
 		}
 	}
