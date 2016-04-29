@@ -103,7 +103,7 @@ func checkOptional() {
 
 // WARNINGS
 func missingOptionalValue(v string) {
-	log.Printf(
+	log.Panicf(
 		color.YellowString(
 			`*************************** WARNING *******************************
   UNABLE TO LOCATE/LOAD THE %s ENVIRONMENT CONFIGURATION VARIABLE`), v)

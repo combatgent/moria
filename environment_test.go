@@ -41,7 +41,8 @@ func TestEnvironmentFailMissingRequired(t *testing.T) {
 			t.Errorf("The code did not panic")
 		}
 	}()
-	os.Setenv("ETCD_HOST", "")
+	os.Clearenv()
+	os.Setenv("ETCD_CA_STRING", "")
 	_ = moria.Environment()
 
 }
