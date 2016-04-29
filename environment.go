@@ -81,6 +81,15 @@ func loadPath(path string) error {
 //  * ETCD_CA_PATH
 //  * ETCD_PEERS
 func checkRequired() {
+	defer func() {
+		if perr := recover(); perr != nil {
+			var ok bool
+			perr, ok = perr.(error)
+			if !ok {
+				fmt.Errorf("Panicking: %v", perr)
+			}
+		}
+	}()
 	for _, req := range required {
 		if os.Getenv(req) == "" {
 			missingRequiredValue(req)
@@ -94,6 +103,15 @@ func checkRequired() {
 //  * CIRCLECI_TOKEN
 //  * CIRCLECI_USERNAME
 func checkOptional() {
+	defer func() {
+		if perr := recover(); perr != nil {
+			var ok bool
+			perr, ok = perr.(error)
+			if !ok {
+				fmt.Errorf("Panicking: %v", perr)
+			}
+		}
+	}()
 	for _, req := range optional {
 		if os.Getenv(req) == "" {
 			missingOptionalValue(req)
