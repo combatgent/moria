@@ -143,17 +143,18 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
-	incomingParams := request.Form.Encode()
-	log.Println("INCOMING PARAMS:", incomingParams)
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
 	address := (*addresses)[index]
 
-	url := address + strings.Replace(request.URL.Path, "/api", "", 1)
+	urlString := address + strings.Replace(request.URL.Path, "/api", "", 1)
 	if len(request.URL.Query()) > 0 {
-		url = url + "?" + request.URL.RawQuery
+		urlString = urlString + "?" + request.URL.RawQuery
 	}
-	innerRequest, err := http.NewRequest(request.Method, "http://"+url, request.Body)
+	for k, v := range request.Form {
+		log.Printf("%v: %v\n", k, strings.Join(v, ","))
+	}
+	innerRequest, err := http.NewRequest(request.Method, "http://"+urlString, request.Body)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
@@ -163,6 +164,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// 		innerRequest.Form.Add(k, v)
 	// 	}
 	// }
+
 	for header, values := range request.Header {
 		for _, value := range values {
 			innerRequest.Header.Add(header, value)
