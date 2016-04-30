@@ -147,24 +147,28 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
 	address := (*addresses)[index]
+
 	url := address + strings.Replace(request.URL.Path, "/api", "", 1)
+	pInfo("QUERY INFO:", url, request.URL.Query(), request.URL.RawQuery, "\n")
 	if len(request.URL.Query()) > 0 {
 		url = url + "?" + request.URL.RawQuery
 	}
-	log.Println("Request Method: ", request.Method, url, request.Body)
+	log.Println("Request Method: ", request.Method, url, request.Body, request.PostForm)
 	innerRequest, err := http.NewRequest(request.Method, "http://"+url, request.Body)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	innerRequest.PostForm = request.PostForm
+	innerRequest.MultipartForm = request.MultipartForm
 	for header, values := range request.Header {
 		for _, value := range values {
 			pInfo("IncomingHeader:%+v\nIncomingValue:%+v\n", header, value)
 			innerRequest.Header.Add(header, value)
 		}
 	}
-	pInfo("InnerRequestFormValue: %+v", innerRequest.FormValue("response_type"))
-	pInfo("InnerRequest: %+v", innerRequest)
+	pInfo("InnerRequestFormValue: %+v\n", innerRequest.FormValue("response_type"))
+	pInfo("InnerRequest: %+v\n", innerRequest)
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -179,6 +183,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 	pInfo("\nReturningStatusCode:%v\nResponseInTotal:%+v\n", response.Status, response)
+	pInfo("ReturningRequestFormValue: %v,IncomingRequestFormValue %v\n", innerRequest.FormValue("response_type"))
 	writer.WriteHeader(response.StatusCode)
 	body := bytes.NewBufferString("")
 	body.ReadFrom(response.Body)
