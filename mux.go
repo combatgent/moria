@@ -60,9 +60,6 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 			handleDuplicates(*handler, method, pattern, address, service, c)
 		}
 	}
-	go func() {
-
-	}()
 	// Add a new pattern handler for the pattern and address.
 
 	pSuccess("*********************** New Service Dicovered ***********************\n")
@@ -124,7 +121,7 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 	c.Set(context.Background(), conflictKey, conflictValues, opts)
 	for _, existingAddress := range handler.Addresses {
 		if address == existingAddress {
-			duplicateKey := "/gateway/conflicts/duplicates" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
+			duplicateKey := "/gateway/conflicts/duplicates/" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
 			c.Set(context.Background(), duplicateKey, address, opts)
 			return
 		}
@@ -133,7 +130,7 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 		pInfo("Not Registering Duplicate: %v %v", conflictKey, conflictValues)
 	}(conflictKey, conflictValues)
 	// Do not add a new address to an existing pattern handler.
-	// handler.addresses = append(handler.addresses, address)
+	handler.Addresses = append(handler.Addresses, address)
 	return
 }
 
@@ -150,7 +147,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
 	address := (*addresses)[index]
-	url := address + request.URL.Path
+	url := address + strings.Replace(request.URL.Path, "/api", "", 1)
 	if len(request.URL.Query()) > 0 {
 		url = url + "?" + request.URL.RawQuery
 	}

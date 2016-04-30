@@ -146,6 +146,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 	exchange.services[service.ID] = service
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
+			pattern = "/api" + pattern
 			exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
 		}
 	}
