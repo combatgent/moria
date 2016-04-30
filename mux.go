@@ -143,7 +143,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
-	incomingParams := request.PostForm.Encode()
+	incomingParams := request.Form.Encode()
 	log.Println("INCOMING PARAMS:", incomingParams)
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
