@@ -143,41 +143,31 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
-
+	incomingParams := request.PostForm.Encode()
+	log.Println("INCOMING PARAMS:", incomingParams)
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
 	address := (*addresses)[index]
 
 	url := address + strings.Replace(request.URL.Path, "/api", "", 1)
-	pInfo("QUERY INFO: %v , %v, %v\n", url, request.URL.Query(), request.URL.RawQuery)
 	if len(request.URL.Query()) > 0 {
 		url = url + "?" + request.URL.RawQuery
 	}
-	log.Println("Request Method: ", request.Method, url, request.Body, request.PostForm)
 	innerRequest, err := http.NewRequest(request.Method, "http://"+url, request.Body)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	pInfo("\n\nFORMVAULES: %v\n\n", request.Form.Encode())
-	for k, values := range request.Form {
-		for _, v := range values {
-			innerRequest.Form.Add(k, v)
-		}
-	}
-	innerRequest.Form = request.Form
-	innerRequest.PostForm = request.PostForm
-	innerRequest.MultipartForm = request.MultipartForm
+	// for k, values := range request.Form {
+	// 	for _, v := range values {
+	// 		innerRequest.Form.Add(k, v)
+	// 	}
+	// }
 	for header, values := range request.Header {
 		for _, value := range values {
-			pInfo("IncomingHeader:%+v\nIncomingValue:%+v\n", header, value)
 			innerRequest.Header.Add(header, value)
 		}
-		innerRequest.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	}
-	pInfo("InnerRequestForm: %+v , RequestForm%+v\n", innerRequest.Form, request.Form)
-	pInfo("InnerRequestFormValue: %+v\n", innerRequest.FormValue("response_type"))
-
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -187,12 +177,9 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Relay the response from the backend service back to the client.
 	for header, values := range response.Header {
 		for _, value := range values {
-			pInfo("ReturningHeader:%+v\nReturningValue:%+v\n", header, value)
 			writer.Header().Add(header, value)
 		}
 	}
-	pInfo("\nReturningStatusCode:%v\nResponseInTotal:%+v\n", response.Status, response)
-	pInfo("ReturningRequestFormValue: %v, IncomingRequestFormValue %v\n", innerRequest.FormValue("response_type"), innerRequest.FormValue("response_type"))
 	writer.WriteHeader(response.StatusCode)
 	body := bytes.NewBufferString("")
 	body.ReadFrom(response.Body)
