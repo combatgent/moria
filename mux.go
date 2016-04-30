@@ -155,7 +155,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		url = url + "?" + request.URL.RawQuery
 	}
 	log.Println("Request Method: ", request.Method, url, request.Body)
-	innerRequest, err := http.NewRequest(request.Method, url, request.Body)
+	innerRequest, err := http.NewRequest(request.Method, "http://"+url, request.Body)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
