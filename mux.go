@@ -159,6 +159,12 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	pInfo("\n\nFORMVAULES: %v\n\n", request.Form.Encode())
+	for k, values := range request.Form {
+		for _, v := range values {
+			innerRequest.Form.Add(k, v)
+		}
+	}
 	innerRequest.Form = request.Form
 	innerRequest.PostForm = request.PostForm
 	innerRequest.MultipartForm = request.MultipartForm
@@ -167,6 +173,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			pInfo("IncomingHeader:%+v\nIncomingValue:%+v\n", header, value)
 			innerRequest.Header.Add(header, value)
 		}
+		innerRequest.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	}
 	pInfo("InnerRequestForm: %+v , RequestForm%+v\n", innerRequest.Form, request.Form)
 	pInfo("InnerRequestFormValue: %+v\n", innerRequest.FormValue("response_type"))
