@@ -162,10 +162,11 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	for header, values := range request.Header {
 		for _, value := range values {
-			pInfo("Header:%+v\nValue:%+v", header, value)
+			pInfo("IncomingHeader:%+v\nIncomingValue:%+v\n", header, value)
 			innerRequest.Header.Add(header, value)
 		}
 	}
+	pInfo("InnerRequest: %+v", innerRequest)
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -175,9 +176,11 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Relay the response from the backend service back to the client.
 	for header, values := range response.Header {
 		for _, value := range values {
+			pInfo("ReturningHeader:%+v\nReturningValue:%+v\n", header, value)
 			writer.Header().Add(header, value)
 		}
 	}
+	pInfo("\nReturningStatusCode:%v\nResponseInTotal:%+v\n", response.Status, response)
 	writer.WriteHeader(response.StatusCode)
 	body := bytes.NewBufferString("")
 	body.ReadFrom(response.Body)
