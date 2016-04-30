@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -151,14 +151,23 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	if len(request.URL.Query()) > 0 {
 		urlString = urlString + "?" + request.URL.RawQuery
 	}
-	for k, v := range request.Form {
-		log.Printf("[%v: %v]", k, strings.Join(v, ","))
-	}
-	innerRequest, err := http.NewRequest(request.Method, "http://"+urlString, request.Body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+
+	// Make new request copy old stuff over
+	innerRequest := new(http.Request)
+	*innerRequest = *request // includes shallow copies of maps, but we handle this below
+
+	innerRequest.URL = CopyURL(request.URL)
+	innerRequest.URL.Scheme = "http"
+	innerRequest.URL.Host = address
+	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
+	innerRequest.URL.RawQuery = request.URL.RawQuery
+
+	// raw query is already included in RequestURI, so ignore it to avoid dupes
+	//innerRequest, err := http.NewRequest(request.Method, "http://"+urlString, request.Body)
+	// if err != nil {
+	// 	writer.WriteHeader(http.StatusInternalServerError)
+	// 	return
+	// }
 	// for k, values := range request.Form {
 	// 	for _, v := range values {
 	// 		innerRequest.Form.Add(k, v)
@@ -186,6 +195,15 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	body := bytes.NewBufferString("")
 	body.ReadFrom(response.Body)
 	writer.Write(body.Bytes())
+}
+
+// CopyURL provides update safe copy by avoiding shallow copying User field
+func CopyURL(i *url.URL) *url.URL {
+	out := *i
+	if i.User != nil {
+		out.User = &(*i.User)
+	}
+	return &out
 }
 
 // Match finds backend service addresses capable of handling a request for the
