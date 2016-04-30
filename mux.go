@@ -159,6 +159,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	innerRequest.Form = request.Form
 	innerRequest.PostForm = request.PostForm
 	innerRequest.MultipartForm = request.MultipartForm
 	for header, values := range request.Header {
@@ -167,8 +168,9 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			innerRequest.Header.Add(header, value)
 		}
 	}
+	pInfo("InnerRequestForm: %+v , RequestForm%+v\n", innerRequest.Form, request.Form)
 	pInfo("InnerRequestFormValue: %+v\n", innerRequest.FormValue("response_type"))
-	pInfo("InnerRequest: %+v\n", innerRequest)
+
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
