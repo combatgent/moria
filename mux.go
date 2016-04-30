@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -152,7 +151,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		urlString = urlString + "?" + request.URL.RawQuery
 	}
 	for k, v := range request.Form {
-		log.Printf("%v: %v\n", k, strings.Join(v, ","))
+		pInfo("%v: %v\n", k, strings.Join(v, ","))
 	}
 	innerRequest, err := http.NewRequest(request.Method, "http://"+urlString, request.Body)
 	if err != nil {
