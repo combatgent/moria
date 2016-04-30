@@ -182,7 +182,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
-		log.Printf("____________________________ INTERNAL ERROR _______________________________")
+		log.Printf("____________________________ INTERNAL ERROR _______________________________%+v", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
