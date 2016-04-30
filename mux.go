@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -181,6 +182,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
+		log.Printf("____________________________ INTERNAL ERROR _______________________________")
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
