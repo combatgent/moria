@@ -149,7 +149,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	address := (*addresses)[index]
 
 	url := address + strings.Replace(request.URL.Path, "/api", "", 1)
-	pInfo("QUERY INFO:", url, request.URL.Query(), request.URL.RawQuery, "\n")
+	pInfo("QUERY INFO: %v , %v, %v\n", url, request.URL.Query(), request.URL.RawQuery)
 	if len(request.URL.Query()) > 0 {
 		url = url + "?" + request.URL.RawQuery
 	}
@@ -183,7 +183,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 	pInfo("\nReturningStatusCode:%v\nResponseInTotal:%+v\n", response.Status, response)
-	pInfo("ReturningRequestFormValue: %v,IncomingRequestFormValue %v\n", innerRequest.FormValue("response_type"))
+	pInfo("ReturningRequestFormValue: %v, IncomingRequestFormValue %v\n", innerRequest.FormValue("response_type"), innerRequest.FormValue("response_type"))
 	writer.WriteHeader(response.StatusCode)
 	body := bytes.NewBufferString("")
 	body.ReadFrom(response.Body)
