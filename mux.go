@@ -163,6 +163,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
 	innerRequest.URL.RawQuery = request.URL.RawQuery
 	innerRequest.RequestURI = ""
+
 	// raw query is already included in RequestURI, so ignore it to avoid dupes
 	//innerRequest, err := http.NewRequest(request.Method, "http://"+urlString, request.Body)
 	// if err != nil {
@@ -174,15 +175,16 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// 		innerRequest.Form.Add(k, v)
 	// 	}
 	// }
-
+	innerRequest.Header = make(http.Header)
 	for header, values := range request.Header {
 		for _, value := range values {
 			innerRequest.Header.Add(header, value)
+			go func(header string, value string) { log.Printf("Header:%+v\nValue:%+v\n", header, value) }(header, value)
 		}
 	}
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
-		log.Printf("____________________________ INTERNAL ERROR _______________________________%+v", err)
+		log.Printf("____________________________ INTERNAL ERROR _______________________________\n%+v", err)
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
