@@ -163,6 +163,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			innerRequest.Header.Add(header, value)
 		}
 	}
+	pInfo("InnerRequestFormValue: %+v", innerRequest.FormValue("response_type"))
 	pInfo("InnerRequest: %+v", innerRequest)
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
