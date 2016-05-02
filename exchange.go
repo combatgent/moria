@@ -62,7 +62,7 @@ func (exchange *Exchange) Init() error {
 
 func registerNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		pInfo("Checking Key: %v\n", n.Key)
+		pInfo("Checking &Key: %v\n", n.Key)
 		if MatchEnv(n.Key) {
 			defer func() {
 				if perr := recover(); perr != nil {
@@ -73,19 +73,19 @@ func registerNodes(exchange *Exchange, node *client.Node) {
 					}
 				}
 			}()
-			pSuccess("Found Matching Key: %v\nWith Value:%v\n", n.Key, n.Value)
+			pSuccess("Found Matching Key: %v\n", n.Key)
 			service := exchange.load(n.Value)
 			service.ID = ID(n.Key)
 			host := Host(n.Key)
 			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
 			CheckEtcdErrors(err)
-			for _, respNode := range resp.Node.Nodes {
-				service.Address = respNode.Value
+			for _, rn := range resp.Node.Nodes {
+				service.Address = rn.Value
 				exchange.Register(service)
 			}
 		}
-		if node.Nodes.Len() > 0 {
-			registerNodes(exchange, node)
+		if n.Nodes.Len() > 0 {
+			registerNodes(exchange, n)
 		}
 	}
 }
@@ -158,10 +158,11 @@ func (exchange *Exchange) PublishLocation() {
 			time.Sleep(5 * time.Second)
 			resp, err := exchange.client.Set(context.Background(), key, address, opts)
 			if err != nil {
-				fmt.Println("ERROR: ", err)
+				log.Println("ERROR: ", err)
 			} else {
-				fmt.Println("SUCCESS: Key", resp.Node.Key, "updated.\n Gateway alive at: \"", address, "\"")
+				log.Println("SUCCESS: Key", resp.Node.Key, "updated.\n Gateway alive at: \"", address, "\"")
 			}
+			log.Println("Checking Gateway...")
 		}
 	}()
 }
