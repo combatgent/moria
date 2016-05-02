@@ -26,6 +26,7 @@ func Configure(e string) *Exchange {
 	go func() {
 		log.Print("Watching for service configuration changes in etcd")
 		exchange.Watch()
+		exchange.PublishLocation()
 	}()
 	return exchange
 }

@@ -127,6 +127,19 @@ func MatchEnv(k string) bool {
 	return false
 }
 
+// MatchEnv checks that this key has values for the appropriate env
+func MatchHostsEnv(k string) bool {
+
+	key := strings.TrimPrefix(k, "/")
+	keyEnv := strings.Split(key, "/")
+	if len(keyEnv) > 3 {
+		if (keyEnv[2] == os.Getenv("GO_ENV")) && (keyEnv[3] == "hosts") {
+			return true
+		}
+	}
+	return false
+}
+
 // ID returns service ID
 func ID(k string) string {
 	key := strings.TrimPrefix(k, "/")

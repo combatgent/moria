@@ -75,7 +75,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 
 // Remove unregisters the address of a backend service as a handler for an
 // HTTP method and URL pattern.
-func (mux *Mux) Remove(method, pattern, address string) {
+func (mux *Mux) Remove(method, pattern, address, service string) {
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
 
@@ -83,13 +83,17 @@ func (mux *Mux) Remove(method, pattern, address string) {
 	if !present {
 		return
 	}
+	pSuccess("*********************** Unregisterring Service Host ***********************\n")
+	fmt.Printf("%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
 
+	fmt.Printf("%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
 	// Find the handler registered for the pattern.
 	for i, handler := range handlers {
 		if pattern == handler.Pattern {
 			// Remove the handler if the address to remove is the only one
 			// registered.
 			if len(handler.Addresses) == 1 && handler.Addresses[0] == address {
+				fmt.Printf("%v %v\n", pSuccessInline("Route No Longer Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
 				mux.routes[method] = append(handlers[:i], handlers[i+1:]...)
 				return
 			}
@@ -98,8 +102,7 @@ func (mux *Mux) Remove(method, pattern, address string) {
 			// handler.
 			for j, existingAddress := range handler.Addresses {
 				if address == existingAddress {
-					handler.Addresses = append(
-						handler.Addresses[:j], handler.Addresses[j+1:]...)
+					handler.Addresses = append(handler.Addresses[:j], handler.Addresses[j+1:]...)
 					return
 				}
 			}
@@ -127,9 +130,6 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 			return
 		}
 	}
-	go func(conflictKey, conflictValues string) {
-		pInfo("Not Registering Duplicate: %v %v", conflictKey, conflictValues)
-	}(conflictKey, conflictValues)
 	// Do not add a new address to an existing pattern handler.
 	handler.Addresses = append(handler.Addresses, address)
 	return
@@ -138,53 +138,17 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 // ServeHTTP dispatches the request to the backend service whose pattern most
 // closely matches the request URL.
 func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	// Create address string
+	var address string
 	// Attempt to match the request against registered patterns and addresses.
-	addresses, err := mux.Match(request.Method, request.URL.Path)
-	if err != nil {
-		writer.WriteHeader(http.StatusNotFound)
-		return
-	}
-	// Make a request to a random backend service.
-	index := rand.Intn(len(*addresses))
-	address := (*addresses)[index]
-
-	urlString := address + strings.Replace(request.URL.Path, "/api", "", 1)
-	if len(request.URL.Query()) > 0 {
-		urlString = urlString + "?" + request.URL.RawQuery
-	}
-
+	findHost(mux, request, writer, &address)
 	// Make new request copy old stuff over
-	innerRequest := new(http.Request)
-	*innerRequest = *request // includes shallow copies of maps, but we handle this below
-
-	innerRequest.URL = CopyURL(request.URL)
-	innerRequest.URL.Scheme = "http"
-	innerRequest.URL.Host = address
-	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
-	innerRequest.URL.RawQuery = request.URL.RawQuery
-	innerRequest.RequestURI = ""
-
-	// raw query is already included in RequestURI, so ignore it to avoid dupes
-	//innerRequest, err := http.NewRequest(request.Method, "http://"+urlString, request.Body)
-	// if err != nil {
-	// 	writer.WriteHeader(http.StatusInternalServerError)
-	// 	return
-	// }
-	// for k, values := range request.Form {
-	// 	for _, v := range values {
-	// 		innerRequest.Form.Add(k, v)
-	// 	}
-	// }
-	innerRequest.Header = make(http.Header)
-	for header, values := range request.Header {
-		for _, value := range values {
-			innerRequest.Header.Add(header, value)
-			go func(header string, value string) { log.Printf("Header:%+v\nValue:%+v\n", header, value) }(header, value)
-		}
-	}
+	innerRequest := generateInnerRequest(request, address)
+	// Execute request
 	response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n%+v", err)
+		// TODO: Add JSON response here for UI
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -208,6 +172,35 @@ func CopyURL(i *url.URL) *url.URL {
 		out.User = &(*i.User)
 	}
 	return &out
+}
+
+func generateInnerRequest(request *http.Request, address string) *http.Request {
+	innerRequest := new(http.Request)
+	*innerRequest = *request // includes shallow copies of maps, but we handle this below
+	innerRequest.URL = CopyURL(request.URL)
+	innerRequest.URL.Scheme = "http"
+	innerRequest.URL.Host = address
+	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
+	innerRequest.URL.RawQuery = request.URL.RawQuery
+	innerRequest.RequestURI = ""
+	innerRequest.Header = make(http.Header)
+	for header, values := range request.Header {
+		for _, value := range values {
+			innerRequest.Header.Add(header, value)
+		}
+	}
+	return innerRequest
+}
+
+func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, address *string) {
+	addresses, err := mux.Match(request.Method, request.URL.Path)
+	// TODO: Add JSON response here
+	if err != nil {
+		writer.WriteHeader(http.StatusNotFound)
+	}
+	// Make a request to a random backend service.
+	index := rand.Intn(len(*addresses))
+	*address = (*addresses)[index]
 }
 
 // Match finds backend service addresses capable of handling a request for the

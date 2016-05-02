@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/coreos/etcd/client"
 	"github.com/fatih/color"
@@ -49,18 +53,17 @@ func (exchange *Exchange) Init() error {
 		CheckEtcdErrors(err)
 	}
 	if response.Node.Nodes.Len() > 0 {
-		checkNodes(exchange, response.Node)
+		registerNodes(exchange, response.Node)
 	}
 	// We want to watch changes *after* this one.
 	exchange.waitIndex = response.Index + 1
 	return nil
 }
 
-func checkNodes(exchange *Exchange, node *client.Node) {
-
-	for _, node := range node.Nodes {
-		pInfo("Checking Key: %v\n", node.Key)
-		if MatchEnv(node.Key) {
+func registerNodes(exchange *Exchange, node *client.Node) {
+	for _, n := range node.Nodes {
+		pInfo("Checking Key: %v\n", n.Key)
+		if MatchEnv(n.Key) {
 			defer func() {
 				if perr := recover(); perr != nil {
 					var ok bool
@@ -70,19 +73,19 @@ func checkNodes(exchange *Exchange, node *client.Node) {
 					}
 				}
 			}()
-			pSuccess("Found Matching Key: %v\nWith Value:%v\n", node.Key, node.Value)
-			service := exchange.load(node.Value)
-			service.ID = ID(node.Key)
-			host := Host(node.Key)
+			pSuccess("Found Matching Key: %v\nWith Value:%v\n", n.Key, n.Value)
+			service := exchange.load(n.Value)
+			service.ID = ID(n.Key)
+			host := Host(n.Key)
 			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
 			CheckEtcdErrors(err)
-			for _, node := range resp.Node.Nodes {
-				service.Address = node.Value
+			for _, respNode := range resp.Node.Nodes {
+				service.Address = respNode.Value
 				exchange.Register(service)
 			}
 		}
 		if node.Nodes.Len() > 0 {
-			checkNodes(exchange, node)
+			registerNodes(exchange, node)
 		}
 	}
 }
@@ -111,21 +114,98 @@ func (exchange *Exchange) Watch() {
 		select {
 		case response := <-receiver:
 			if response.Action == "set" {
-				checkNodes(exchange, response.Node)
+				registerNodes(exchange, response.Node)
 			} else if response.Action == "delete" {
-				node := response.Node
-				pInfo("Checking Key: %v\n", node.Key)
-				if MatchEnv(response.Node.Key) {
-					defer func() {
-						if perr := recover(); perr != nil {
-							var ok bool
-							perr, ok = perr.(error)
-							if !ok {
-								fmt.Errorf("Panicking: %v", perr)
-							}
-						}
-					}()
-					service := exchange.services[ID(response.Node.Key)]
+				unregisterNodes(exchange, response.Node)
+			}
+		}
+	}
+}
+
+func gatewayNamespace() (string, string) {
+	var host, uName string
+	var hostErr, uNameErr error
+	var outputHost, outputUName []byte
+	if os.Getenv("DYNO_ENABLED") != "" {
+		outputHost, hostErr = exec.Command("$(ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1)").Output()
+		outputUName, uNameErr = exec.Command("uname -n").Output()
+		if hostErr != nil {
+			log.Println("Unable to publish dyno address", hostErr)
+		} else if uNameErr != nil {
+			log.Println("Unable to publish dyno uName", hostErr)
+		}
+		host = string(outputHost)
+		uName = "/environments/" + os.Getenv("GO_ENV") + "/gateway/" + string(outputUName)
+	} else {
+		host = "127.0.0.1"
+		uName = "/environments/" + os.Getenv("GO_ENV") + "/gateway/" + os.Getenv("GO_ENV")
+	}
+	return strings.Join([]string{host, ":", os.Getenv("PORT")}, ""), uName
+}
+
+func gatewaySetOpts() *client.SetOptions {
+	opts := &client.SetOptions{}
+	opts.Refresh = true
+	opts.TTL = time.Second * 30
+	return opts
+}
+
+func (exchange *Exchange) PublishLocation() {
+	address, key := gatewayNamespace()
+	opts := gatewaySetOpts()
+	go func() {
+		for {
+			time.Sleep(5 * time.Second)
+			resp, err := exchange.client.Set(context.Background(), key, address, opts)
+			if err != nil {
+				fmt.Println("ERROR: ", err)
+			} else {
+				fmt.Println("SUCCESS: Key", resp.Node.Key, "updated.\n Gateway alive at: \"", address, "\"")
+			}
+		}
+	}()
+}
+
+func unregisterNodes(exchange *Exchange, node *client.Node) {
+	for _, n := range node.Nodes {
+		pInfo("Unregistering Key: %v\n", n.Key)
+		if MatchHostsEnv(n.Key) {
+			defer func() {
+				if perr := recover(); perr != nil {
+					var ok bool
+					perr, ok = perr.(error)
+					if !ok {
+						fmt.Errorf("Panicking: %v", perr)
+					}
+				}
+			}()
+			if service, ok := exchange.services[ID(n.Key)]; ok {
+				host := Host(n.Key)
+				resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
+				CheckEtcdErrors(err)
+				for _, respNode := range resp.Node.Nodes {
+					if n.Value == respNode.Value {
+						service.Address = respNode.Value
+						exchange.Unregister(service)
+					}
+				}
+			}
+		} else if MatchEnv(n.Key) {
+			defer func() {
+				if perr := recover(); perr != nil {
+					var ok bool
+					perr, ok = perr.(error)
+					if !ok {
+						fmt.Errorf("Panicking: %v", perr)
+					}
+				}
+			}()
+			if service, ok := exchange.services[ID(n.Key)]; ok {
+				host := Host(n.Key)
+				resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
+				CheckEtcdErrors(err)
+				for _, respNode := range resp.Node.Nodes {
+					service.Address = respNode.Value
 					exchange.Unregister(service)
 				}
 			}
@@ -156,7 +236,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 func (exchange *Exchange) Unregister(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
-			exchange.mux.Remove(method, pattern, service.Address)
+			exchange.mux.Remove(method, pattern, service.Address, service.ID)
 		}
 	}
 }
