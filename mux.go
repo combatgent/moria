@@ -212,6 +212,7 @@ func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, addre
 		writer.Header().Set("Content-Type", "application/json")
 		jsonStr := `[{"error":"404 Status Not Found"},{"status":404}]`
 		writer.Write([]byte(jsonStr))
+		return
 	}
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
