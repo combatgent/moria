@@ -145,7 +145,6 @@ func (exchange *Exchange) Watch() {
 		case response := <-receiver:
 			log.Printf("INNER: Got Response: %v\nINNER: Executed on node key: %v", response.Action, response.Node.Key)
 			if response.Action == "set" {
-				log.Println("********************************************************************************")
 				splitKeys := strings.Split(response.Node.Key, "/")
 				if splitKeys[len(splitKeys)-1] == "routes" {
 					log.Println("Modifying Routes")
@@ -161,10 +160,11 @@ func (exchange *Exchange) Watch() {
 					}(exchange, response.Node)
 				}
 			} else if response.Action == "delete" {
-				go func(exchange *Exchange, node *client.Node) {
-					log.Println("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{  Calling UNREGISTER  }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
-					unregisterNode(exchange, node)
-				}(exchange, response.Node)
+				go func(exchange *Exchange, prevNode *client.Node) {
+					log.Println("Deleting Hosts")
+					log.Println("********************************************************************************")
+					unregisterNode(exchange, prevNode)
+				}(exchange, response.PrevNode)
 			}
 		}
 	}
@@ -264,21 +264,15 @@ func unregisterNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
-
 		log.Printf("[[[[[[[[[[[[[[[[[[[[[[[Mathced a HOST NEED TO AQUIRE ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
 		if service, ok := exchange.services[ID(n.Key)]; ok {
 			log.Printf("[[[[[[[[[[[[[[[[[[[[[[[AQUIRED----------------------------- ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
-			host := Host(n.Key)
-			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
-			CheckEtcdErrors(err)
-			for _, respNode := range resp.Node.Nodes {
-				if n.Value == respNode.Value {
-					log.Printf("[[[[[[[[[[[[[[[[[[[[[[[  UNREGISTERING MATCHING ADDRESS VALUE   ]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
-					service.Address = n.Value
-					exchange.Unregister(service)
-				}
-			}
+			// host := Host(n.Key)
+			log.Printf("[[[[[[[[[[[[[[[[[[[[[[[  UNREGISTERING MATCHING ADDRESS VALUE   ]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
+			service.Address = n.Value
+			exchange.Unregister(service)
 		}
+
 	} else if MatchEnv(n.Key) {
 		defer func() {
 			if perr := recover(); perr != nil {
