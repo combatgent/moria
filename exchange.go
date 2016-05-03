@@ -101,7 +101,7 @@ func registerNodes(exchange *Exchange, node *client.Node) {
 			}
 		}
 		if n.Nodes.Len() > 0 {
-			registerNodes(exchange, n)
+			go func() { registerNodes(exchange, n) }()
 		}
 	}
 }
