@@ -139,6 +139,7 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 		handler.Addresses = append(handler.Addresses, address)
 	} else {
 		log.Printf("\n>\t%v\n>\tAddress: %v", pDisappointedInline("Tried to register \"\" as a valid host please avoid if at all possible"), address)
+		log.Printf("\n>********************** New Service Could Not Be Dicovered *********************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pDisappointedInline("Not Registering Route:"), pMethod(method), pattern, pDisappointedInline("Route Could Not Be Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pDisappointedInline("Service Could Not Have Been Located At:"), address)
 	}
 	return
 }
