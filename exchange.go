@@ -136,7 +136,7 @@ func gatewayNamespace() (string, string) {
 			log.Println("Unable to publish dyno uName", hostErr)
 		}
 		host = string(outputHost)
-		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + string(outputUName)
+		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
 	} else {
 		outputUName, uNameErr = exec.Command("uname -mrs").Output()
 		host = "127.0.0.1"
