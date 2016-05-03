@@ -161,7 +161,7 @@ func Host(k string) string {
 		} else {
 			splitKeys := strings.Split(host, "/")
 			log.Println("{[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[     HOSTS     ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}")
-			log.Println(splitKeys[len(splitKeys)-1])
+			log.Println(splitKeys, splitKeys[len(splitKeys)-1])
 			if splitKeys[len(splitKeys)-1] != "hosts" {
 				host += "hosts"
 			}
