@@ -128,7 +128,6 @@ func (exchange *Exchange) Watch() {
 	go func() {
 		for {
 			r, err := watcher.Next(context.Background())
-			log.Printf("OUTER: Got Response: %v\nOUTER: Executed on node key: %v", r.Action, r.Node.Key)
 			if err != nil {
 				color.Set(color.FgRed)
 				log.Println(err)
@@ -138,12 +137,10 @@ func (exchange *Exchange) Watch() {
 		}
 	}()
 	for {
-		log.Println("Running For Loop")
 		options := EtcdGetOptions()
 		ctx := context.TODO()
 		select {
 		case response := <-receiver:
-			log.Printf("INNER: Got Response: %v\nINNER: Executed on node key: %v", response.Action, response.Node.Key)
 			if response.Action == "set" {
 				splitKeys := strings.Split(response.Node.Key, "/")
 				if splitKeys[len(splitKeys)-1] == "routes" {
