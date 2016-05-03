@@ -53,7 +53,10 @@ func (exchange *Exchange) Init() error {
 		CheckEtcdErrors(err)
 	}
 	if response.Node.Nodes.Len() > 0 {
-		registerNodes(exchange, response.Node)
+		go func(exchange *Exchange, node *client.Node) {
+			registerNodes(exchange, node)
+		}(exchange, response.Node)
+
 	}
 	// We want to watch changes *after* this one.
 	exchange.waitIndex = response.Index + 1
@@ -107,7 +110,9 @@ func registerNode(exchange *Exchange, n *client.Node) {
 		}
 	}
 	if n.Nodes.Len() > 0 {
-		registerNodes(exchange, n)
+		go func(exchange *Exchange, node *client.Node) {
+			registerNodes(exchange, n)
+		}(exchange, n)
 	}
 }
 
@@ -151,10 +156,14 @@ func (exchange *Exchange) Watch() {
 				} else {
 					log.Println("Modifying Hosts")
 					log.Println("********************************************************************************")
-					registerNode(exchange, response.Node)
+					go func(exchange *Exchange, node *client.Node) {
+						registerNode(exchange, node)
+					}(exchange, response.Node)
 				}
 			} else if response.Action == "delete" {
-				unregisterNodes(exchange, response.Node)
+				go func(exchange *Exchange, node *client.Node) {
+					unregisterNodes(exchange, node)
+				}(exchange, response.Node)
 			}
 		}
 	}
