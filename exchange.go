@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/coreos/etcd/client"
@@ -53,12 +52,12 @@ func (exchange *Exchange) Init() error {
 	if err != nil {
 		CheckEtcdErrors(err)
 	}
-
 	if response.Node.Nodes.Len() > 0 {
 		registerNodes(exchange, response.Node)
 	}
 	// We want to watch changes *after* this one.
 	exchange.waitIndex = response.Index + 1
+
 	return nil
 }
 
@@ -102,15 +101,9 @@ func registerNodes(exchange *Exchange, node *client.Node) {
 				exchange.Register(service)
 			}
 		}
-		wg := &sync.WaitGroup{}
 		if n.Nodes.Len() > 0 {
-			go func(n *client.Node, wg *sync.WaitGroup) {
-				wg.Add(1)
-				registerNodes(exchange, n)
-				wg.Done()
-			}(n, wg)
+			registerNodes(exchange, n)
 		}
-		wg.Wait()
 	}
 }
 
