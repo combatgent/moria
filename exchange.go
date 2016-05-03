@@ -267,12 +267,14 @@ func unregisterNode(exchange *Exchange, n *client.Node) {
 
 		log.Printf("[[[[[[[[[[[[[[[[[[[[[[[Mathced a HOST NEED TO AQUIRE ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
 		if service, ok := exchange.services[ID(n.Key)]; ok {
+			log.Printf("[[[[[[[[[[[[[[[[[[[[[[[AQUIRED----------------------------- ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
 			host := Host(n.Key)
 			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
 			CheckEtcdErrors(err)
 			for _, respNode := range resp.Node.Nodes {
 				if n.Value == respNode.Value {
-					service.Address = respNode.Value
+					log.Printf("[[[[[[[[[[[[[[[[[[[[[[[  UNREGISTERING MATCHING ADDRESS VALUE   ]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
+					service.Address = n.Value
 					exchange.Unregister(service)
 				}
 			}
