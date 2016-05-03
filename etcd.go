@@ -159,7 +159,10 @@ func Host(k string) string {
 		if i < (len(keys) - 1) {
 			host += w + "/"
 		} else {
-			host += "hosts"
+			splitKeys := strings.Split(host, "/")
+			if (splitKeys[len(splitKeys)-1]) != "hosts" {
+				host += "hosts"
+			}
 		}
 	}
 	return host
