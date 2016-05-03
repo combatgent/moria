@@ -3,7 +3,6 @@ package moria
 import (
 	"log"
 	"os"
-	"sync"
 
 	"github.com/coreos/etcd/client"
 )
@@ -21,8 +20,7 @@ func Configure(e string) *Exchange {
 	mux := NewMux()
 	namespace := Namespace()
 	exchange := NewExchange(namespace, etcd, mux)
-	wg := &sync.WaitGroup{}
-	exchange.Init(wg)
+	exchange.Init()
 	// Watch for service changes in etcd.  The exchange updates service
 	// routing rules based on configuration changes in etcd.
 	go func() {
