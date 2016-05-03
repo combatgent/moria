@@ -247,46 +247,50 @@ func (exchange *Exchange) PublishLocation() {
 
 func unregisterNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		pInfo("Unregistering Key: %v\n", n.Key)
-		if MatchHostsEnv(n.Key) {
-			defer func() {
-				if perr := recover(); perr != nil {
-					var ok bool
-					perr, ok = perr.(error)
-					if !ok {
-						fmt.Errorf("Panicking: %v", perr)
-					}
-				}
-			}()
-			if service, ok := exchange.services[ID(n.Key)]; ok {
-				host := Host(n.Key)
-				resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
-				CheckEtcdErrors(err)
-				for _, respNode := range resp.Node.Nodes {
-					if n.Value == respNode.Value {
-						service.Address = respNode.Value
-						exchange.Unregister(service)
-					}
+		unregisterNode(exchange, n)
+	}
+}
+
+func unregisterNode(exchange *Exchange, n *client.Node) {
+	pInfo("Unregistering Key: %v\n", n.Key)
+	if MatchHostsEnv(n.Key) {
+		defer func() {
+			if perr := recover(); perr != nil {
+				var ok bool
+				perr, ok = perr.(error)
+				if !ok {
+					fmt.Errorf("Panicking: %v", perr)
 				}
 			}
-		} else if MatchEnv(n.Key) {
-			defer func() {
-				if perr := recover(); perr != nil {
-					var ok bool
-					perr, ok = perr.(error)
-					if !ok {
-						fmt.Errorf("Panicking: %v", perr)
-					}
-				}
-			}()
-			if service, ok := exchange.services[ID(n.Key)]; ok {
-				host := Host(n.Key)
-				resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
-				CheckEtcdErrors(err)
-				for _, respNode := range resp.Node.Nodes {
+		}()
+		if service, ok := exchange.services[ID(n.Key)]; ok {
+			host := Host(n.Key)
+			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
+			CheckEtcdErrors(err)
+			for _, respNode := range resp.Node.Nodes {
+				if n.Value == respNode.Value {
 					service.Address = respNode.Value
 					exchange.Unregister(service)
 				}
+			}
+		}
+	} else if MatchEnv(n.Key) {
+		defer func() {
+			if perr := recover(); perr != nil {
+				var ok bool
+				perr, ok = perr.(error)
+				if !ok {
+					fmt.Errorf("Panicking: %v", perr)
+				}
+			}
+		}()
+		if service, ok := exchange.services[ID(n.Key)]; ok {
+			host := Host(n.Key)
+			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
+			CheckEtcdErrors(err)
+			for _, respNode := range resp.Node.Nodes {
+				service.Address = respNode.Value
+				exchange.Unregister(service)
 			}
 		}
 	}
