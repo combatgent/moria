@@ -235,7 +235,7 @@ func (exchange *Exchange) PublishLocation() {
 			if err != nil {
 				log.Println("ERROR: ", err)
 			} else {
-				log.Printf("Success Gateway Alive At: \"%v\"\nServices May Locate This Gateway At The Key Provided Below\nGATEWAY_KEY=%v", address, resp.Node.Key)
+				log.Printf("\n\t\tSuccess Gateway Alive At: \"%v\"\n\t\tServices May Locate This Gateway At The Key Provided Below\n\t\tGATEWAY_KEY=%v", address, resp.Node.Key)
 			}
 		}
 	}()
