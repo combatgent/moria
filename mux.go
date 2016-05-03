@@ -229,6 +229,7 @@ func (mux *Mux) Match(method, pattern string) (*[]string, error) {
 	if present {
 		for _, handler := range handlers {
 			if handler.Match(pattern) {
+				log.Println("Found MatchingPattern", pattern)
 				return &handler.Addresses, nil
 			}
 		}
