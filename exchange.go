@@ -111,6 +111,7 @@ func (exchange *Exchange) Watch() {
 		}
 	}()
 	for {
+		log.Println("Running For Loop")
 		select {
 		case response := <-receiver:
 			if response.Action == "set" {
