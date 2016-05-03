@@ -153,6 +153,7 @@ func ID(k string) string {
 // Host returns service Host
 func Host(k string) string {
 	key := strings.TrimPrefix(k, "/")
+	key = strings.TrimSuffix(key, "/")
 	keys := strings.Split(key, "/")
 	host := ""
 	for i, w := range keys {
@@ -163,7 +164,7 @@ func Host(k string) string {
 			log.Println("{[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[     HOSTS     ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}")
 			log.Println(splitKeys, splitKeys[len(splitKeys)-1])
 			if splitKeys[len(splitKeys)-1] != "hosts" {
-				host += "hosts"
+				host += "/hosts"
 			}
 		}
 	}
