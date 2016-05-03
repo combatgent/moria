@@ -143,22 +143,22 @@ func (exchange *Exchange) Watch() {
 			if response.Action == "set" {
 				splitKeys := strings.Split(response.Node.Key, "/")
 				if splitKeys[len(splitKeys)-1] == "routes" {
-					log.Println("\t\t\t\tModifying Routes")
-					log.Println("********************************************************************************")
+					log.Println("\n\t\t\t\tModifying Routes")
+					log.Println("\n********************************************************************************")
 					getRootNode(response.Node.Key)
 					resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
 					registerNode(exchange, resp.Node)
 				} else {
-					log.Println("\t\t\t\tModifying Hosts")
-					log.Println("********************************************************************************")
+					log.Println("\n\t\t\t\tModifying Hosts")
+					log.Println("\n********************************************************************************")
 					go func(exchange *Exchange, node *client.Node) {
 						registerNode(exchange, node)
 					}(exchange, response.Node)
 				}
 			} else if response.Action == "delete" {
 				go func(exchange *Exchange, prevNode *client.Node) {
-					log.Println("\t\t\t\tDeleting Hosts")
-					log.Println("********************************************************************************")
+					log.Println("\n\t\t\t\tDeleting Hosts")
+					log.Println("\n********************************************************************************")
 					unregisterNode(exchange, prevNode)
 				}(exchange, response.PrevNode)
 			}
@@ -235,7 +235,7 @@ func (exchange *Exchange) PublishLocation() {
 			if err != nil {
 				log.Println("ERROR: ", err)
 			} else {
-				log.Printf("\n\t\t\tSuccess Gateway Alive At: \"%v\"\n\t\t\tServices May Locate This Gateway At The Key Provided Below\n\t\t\tGATEWAY_KEY=%v", address, resp.Node.Key)
+				log.Printf("\n>\tSuccess Gateway Alive At: \"%v\"\n>\tServices May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY=%v", address, resp.Node.Key)
 			}
 		}
 	}()
