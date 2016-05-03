@@ -71,7 +71,6 @@ func registerNodes(exchange *Exchange, node *client.Node) {
 }
 
 func registerNode(exchange *Exchange, n *client.Node) {
-	pInfo("Checking &Key: %v\n", n.Key)
 	if MatchEnv(n.Key) {
 		defer func() {
 			if perr := recover(); perr != nil {
