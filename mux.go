@@ -150,7 +150,11 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Create address string
 	var address string
 	// Attempt to match the request against registered patterns and addresses.
-	findHost(mux, request, writer, &address)
+	err := findHost(mux, request, writer, &address)
+	if err != nil {
+		log.Printf("%v", pDisappointedInline("Invalid URL Pattern"))
+		return
+	}
 	// Make new request copy old stuff over
 	innerRequest := generateInnerRequest(request, address)
 	// Execute request
@@ -204,7 +208,7 @@ func generateInnerRequest(request *http.Request, address string) *http.Request {
 	return innerRequest
 }
 
-func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, address *string) {
+func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, address *string) error {
 	addresses, err := mux.Match(request.Method, request.URL.Path)
 	// TODO: Add JSON response here
 	if err != nil {
@@ -212,7 +216,7 @@ func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, addre
 		writer.Header().Set("Content-Type", "application/json")
 		jsonStr := `[{"error":"404 Status Not Found"},{"status":404}]`
 		writer.Write([]byte(jsonStr))
-		return
+		return errors.New("No Matching Pattern")
 	}
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
