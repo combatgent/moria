@@ -126,8 +126,9 @@ func gatewayNamespace() (string, string) {
 	var host, uName string
 	var hostErr, uNameErr error
 	var outputHost, outputUName []byte
-	outputUName, uNameErr = exec.Command("uname -n").Output()
+	outputUName, uNameErr = exec.Command("uname -mrs").Output()
 	if !strings.Contains(string(outputUName), "Darwin") {
+		outputUName, uNameErr = exec.Command("uname -n").Output()
 		outputHost, hostErr = exec.Command("$(ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1)").Output()
 		if hostErr != nil {
 			log.Println("Unable to publish dyno address", hostErr)
@@ -137,7 +138,7 @@ func gatewayNamespace() (string, string) {
 		host = string(outputHost)
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + string(outputUName)
 	} else {
-		outputUName, uNameErr = exec.Command("uname -n").Output()
+		outputUName, uNameErr = exec.Command("uname -mrs").Output()
 		host = "127.0.0.1"
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
 	}
