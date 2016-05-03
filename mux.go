@@ -233,6 +233,9 @@ func (mux *Mux) Match(method, pattern string) (*[]string, error) {
 				return &handler.Addresses, nil
 			}
 		}
+	} else {
+		log.Println("------------------------Returning Error-----------------------------\nErroneous pattern: ", pattern)
+		return nil, errors.New("No matching address")
 	}
 	return nil, errors.New("No matching address")
 }
