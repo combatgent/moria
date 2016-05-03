@@ -162,7 +162,8 @@ func (exchange *Exchange) Watch() {
 				}
 			} else if response.Action == "delete" {
 				go func(exchange *Exchange, node *client.Node) {
-					unregisterNodes(exchange, node)
+					log.Println("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{  Calling UNREGISTER  }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}")
+					unregisterNode(exchange, node)
 				}(exchange, response.Node)
 			}
 		}
