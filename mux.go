@@ -231,7 +231,6 @@ func (mux *Mux) Match(method, pattern string) (*[]string, error) {
 	mux.rw.RLock()
 	defer mux.rw.RUnlock()
 	handlers, present := mux.routes[method]
-	log.Println("------------------------Matching Pattern-----------------------------\nPresent is", present)
 	if present {
 		for _, handler := range handlers {
 			if handler.Match(pattern) {
@@ -240,7 +239,6 @@ func (mux *Mux) Match(method, pattern string) (*[]string, error) {
 			}
 		}
 	} else {
-		log.Println("------------------------Returning Error-----------------------------\nErroneous pattern: ", pattern)
 		return nil, errors.New("No matching address")
 	}
 	return nil, errors.New("No matching address")
