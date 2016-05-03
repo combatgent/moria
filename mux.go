@@ -59,6 +59,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	for _, handler := range handlers {
 		if pattern == handler.Pattern {
 			handleDuplicates(*handler, method, pattern, address, service, c)
+			return
 		}
 	}
 	// Add a new pattern handler for the pattern and address.
@@ -83,17 +84,17 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 	if !present {
 		return
 	}
-	pSuccess("*********************** Unregisterring Service Host ***********************\n")
-	fmt.Printf("%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
+	log.Println("*********************** Unregisterring Service Host ***********************")
+	log.Printf("%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
 
-	fmt.Printf("%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
+	log.Printf("%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
 	// Find the handler registered for the pattern.
 	for i, handler := range handlers {
 		if pattern == handler.Pattern {
 			// Remove the handler if the address to remove is the only one
 			// registered.
 			if len(handler.Addresses) == 1 && handler.Addresses[0] == address {
-				fmt.Printf("%v %v\n", pSuccessInline("Route No Longer Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
+				log.Printf("%v %v\n", pSuccessInline("Route No Longer Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
 				mux.routes[method] = append(handlers[:i], handlers[i+1:]...)
 				return
 			}
@@ -112,6 +113,7 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 
 func handleDuplicates(handler PatternHandler, method string, pattern string, address string, service string, c client.KeysAPI) {
 	conflictKey := "/gateway/conflicts/" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
+	log.Println("{{{{{{{{{{{{{{{{{  DUPLICATE  }}}}}}}}}}}}}}}}}")
 	var conf conflict
 	conf.ExistingAddresses = handler.Addresses
 	conf.AttemptedConflict = address
