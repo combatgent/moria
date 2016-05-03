@@ -159,6 +159,9 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n%+v", err)
 		// TODO: Add JSON response here for UI
 		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Header().Set("Content-Type", "application/json")
+		jsonStr := `[{"error":"500 Internal Server Error"},{"status":500}]`
+		writer.Write([]byte(jsonStr))
 		return
 	}
 
@@ -206,6 +209,9 @@ func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, addre
 	// TODO: Add JSON response here
 	if err != nil {
 		writer.WriteHeader(http.StatusNotFound)
+		writer.Header().Set("Content-Type", "application/json")
+		jsonStr := `[{"error":"404 Status Not Found"},{"status":404}]`
+		writer.Write([]byte(jsonStr))
 	}
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
