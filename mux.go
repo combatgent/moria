@@ -82,6 +82,7 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
 	if !present {
+		log.Println("|||||||||||||||||||||||||||||||||||||              NOT PRESENT               |||||||||||||||||||||||||||||||||||||||||")
 		for _, h := range handlers {
 			log.Printf("HANDLER:\n%+v\n\n", h)
 		}
