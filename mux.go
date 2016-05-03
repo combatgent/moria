@@ -63,11 +63,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 		}
 	}
 	// Add a new pattern handler for the pattern and address.
-
-	log.Println("\n>**************************** New Service Dicovered ****************************")
-	log.Printf("\n>\t%v %v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern)
-	log.Printf("\n>\t%v %v\n", pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
-	log.Printf("\n>\t%v %v\n", pSuccessInline("Service Located At:"), address)
+	log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
 	addresses := []string{address}
 	handler := PatternHandler{Pattern: pattern, Addresses: addresses}
 	mux.routes[method] = append(handlers, &handler)
@@ -83,7 +79,7 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 		return
 	}
 	log.Println("*********************** Unregisterring Service Host ***********************")
-	log.Printf("\n>\t%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
+	log.Printf("\n>\t%v %v %v\n", pSuccessInline("Unregistering Route:"), pMethod(method), pattern)
 
 	log.Printf("\n>\t%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
 	// Find the handler registered for the pattern.
