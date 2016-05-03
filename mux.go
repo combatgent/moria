@@ -221,6 +221,7 @@ func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, addre
 	// Make a request to a random backend service.
 	index := rand.Intn(len(*addresses))
 	*address = (*addresses)[index]
+	return nil
 }
 
 // Match finds backend service addresses capable of handling a request for the
