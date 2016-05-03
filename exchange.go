@@ -318,6 +318,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 func (exchange *Exchange) Unregister(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
+			log.Println("{{{{{{{{{{{{{{{{{{{    CALLING REMOVE     }}}}}}}}}}}}}}}}}}}\nON:", method, pattern, service.Address, service.ID)
 			exchange.mux.Remove(method, pattern, service.Address, service.ID)
 		}
 	}

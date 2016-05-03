@@ -79,7 +79,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 func (mux *Mux) Remove(method, pattern, address, service string) {
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
-
+	log.Println("((((((((((((((((((( INSIDE REMOVE  )))))))))))))))))))")
 	handlers, present := mux.routes[method]
 	if !present {
 		return
