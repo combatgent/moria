@@ -77,9 +77,10 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 // Remove unregisters the address of a backend service as a handler for an
 // HTTP method and URL pattern.
 func (mux *Mux) Remove(method, pattern, address, service string) {
+	log.Println("\n\n\n\n\n\n\n\n((((((((((((((((((( INSIDE REMOVE  )))))))))))))))))))\n\n\n\n\n\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
-	log.Println("((((((((((((((((((( INSIDE REMOVE  )))))))))))))))))))")
+
 	handlers, present := mux.routes[method]
 	if !present {
 		return
