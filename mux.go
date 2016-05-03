@@ -64,10 +64,10 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	}
 	// Add a new pattern handler for the pattern and address.
 
-	pSuccess("*********************** New Service Dicovered ***********************\n")
-	fmt.Printf("%v %v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern)
-	fmt.Printf("%v %v\n", pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
-	fmt.Printf("%v %v\n", pSuccessInline("Service Located At:"), address)
+	log.Println("\n>**************************** New Service Dicovered ****************************")
+	log.Printf("\n>\t%v %v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern)
+	log.Printf("\n>\t%v %v\n", pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
+	log.Printf("\n>\t%v %v\n", pSuccessInline("Service Located At:"), address)
 	addresses := []string{address}
 	handler := PatternHandler{Pattern: pattern, Addresses: addresses}
 	mux.routes[method] = append(handlers, &handler)
@@ -76,30 +76,23 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 // Remove unregisters the address of a backend service as a handler for an
 // HTTP method and URL pattern.
 func (mux *Mux) Remove(method, pattern, address, service string) {
-	log.Println("\n\n\n\n\n\n\n\n((((((((((((((((((( INSIDE REMOVE  )))))))))))))))))))\n\n\n\n\n\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 	mux.rw.Lock()
-	log.Println("\n\n\n\n\n\n\n\n((((((((((((((((((( INSIDE LOCKED STATE  )))))))))))))))))))\n\n\n\n\n\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
 	if !present {
-		log.Println("\n|||||||||||||||||||||||||||||||||||||              NOT PRESENT               |||||||||||||||||||||||||||||||||||||||||")
-		for _, h := range handlers {
-			log.Printf("HANDLER:\n%+v\n\n", h)
-		}
 		return
 	}
-	log.Println("\n|||||||||||||||||||||||||||||||||||||              TOTALLY PRESENT               |||||||||||||||||||||||||||||||||||||||||")
 	log.Println("*********************** Unregisterring Service Host ***********************")
-	log.Printf("%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
+	log.Printf("\n>\t%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
 
-	log.Printf("%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
+	log.Printf("\n>\t%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
 	// Find the handler registered for the pattern.
 	for i, handler := range handlers {
 		if pattern == handler.Pattern {
 			// Remove the handler if the address to remove is the only one
 			// registered.
 			if len(handler.Addresses) == 1 && handler.Addresses[0] == address {
-				log.Printf("%v %v\n", pSuccessInline("Route No Longer Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
+				log.Printf("\n>\t%v %v\n", pSuccessInline("Route No Longer Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
 				mux.routes[method] = append(handlers[:i], handlers[i+1:]...)
 				return
 			}
@@ -118,7 +111,6 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 
 func handleDuplicates(handler PatternHandler, method string, pattern string, address string, service string, c client.KeysAPI) {
 	conflictKey := "/gateway/conflicts/" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
-	log.Println("{{{{{{{{{{{{{{{{{  DUPLICATE  }}}}}}}}}}}}}}}}}")
 	var conf conflict
 	conf.ExistingAddresses = handler.Addresses
 	conf.AttemptedConflict = address

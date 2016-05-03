@@ -241,7 +241,7 @@ func unregisterNodes(exchange *Exchange, node *client.Node) {
 }
 
 func unregisterNode(exchange *Exchange, n *client.Node) {
-	pInfo("Unregistering Key: %v\n", n.Key)
+	pInfo("\n>\tUnregistering Key: %v\n", n.Key)
 	if MatchHostsEnv(n.Key) {
 		defer func() {
 			if perr := recover(); perr != nil {
@@ -252,11 +252,7 @@ func unregisterNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
-		log.Printf("[[[[[[[[[[[[[[[[[[[[[[[Mathced a HOST NEED TO AQUIRE ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
 		if service, ok := exchange.services[ID(n.Key)]; ok {
-			log.Printf("[[[[[[[[[[[[[[[[[[[[[[[AQUIRED----------------------------- ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
-			// host := Host(n.Key)
-			log.Printf("[[[[[[[[[[[[[[[[[[[[[[[  UNREGISTERING MATCHING ADDRESS VALUE   ]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
 			service.Address = n.Value
 			exchange.Unregister(service)
 		}
@@ -306,7 +302,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 func (exchange *Exchange) Unregister(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
-			log.Println("{{{{{{{{{{{{{{{{{{{    CALLING REMOVE     }}}}}}}}}}}}}}}}}}}\nON:", method, pattern, service.Address, service.ID)
+			log.Printf("\n>\nREMOVING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
 			exchange.mux.Remove(method, pattern, service.Address, service.ID)
 		}
 	}
