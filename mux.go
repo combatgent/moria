@@ -80,9 +80,11 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 	log.Println("\n\n\n\n\n\n\n\n((((((((((((((((((( INSIDE REMOVE  )))))))))))))))))))\n\n\n\n\n\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
-
 	handlers, present := mux.routes[method]
 	if !present {
+		for _, h := range handlers {
+			log.Printf("HANDLER:\n%+v\n\n", h)
+		}
 		return
 	}
 	log.Println("*********************** Unregisterring Service Host ***********************")
