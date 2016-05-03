@@ -123,7 +123,7 @@ func (exchange *Exchange) Watch() {
 				log.Println("Registering Node")
 				getRootNode()
 				resp, err := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
-				registerNodes(exchange, response.Node)
+				registerNodes(exchange, resp.Node)
 			} else if response.Action == "delete" {
 				unregisterNodes(exchange, response.Node)
 			}
