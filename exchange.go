@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -122,14 +122,30 @@ func (exchange *Exchange) Watch() {
 	}
 }
 
+func getIPAddress() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		os.Stderr.WriteString("Oops: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+
+				os.Stdout.WriteString(ipnet.IP.String() + "\n")
+				return ipnet.IP.String()
+			}
+		}
+	}
+}
 func gatewayNamespace() (string, string) {
-	var host, uName, outputUName string
+	var host, uName, outputUName, outputHost string
 	var hostErr, uNameErr error
-	var outputHost []byte
 	outputUName, uNameErr = os.Hostname()
 	log.Println("Outside:", outputUName)
 	if !strings.Contains(outputUName, ".local") {
-		outputHost, hostErr = exec.Command("$(ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1)").Output()
+		outputHost = getIPAddress()
 		if hostErr != nil {
 			log.Println("Unable to publish dyno address", hostErr)
 		} else if uNameErr != nil {
@@ -137,6 +153,7 @@ func gatewayNamespace() (string, string) {
 		}
 		host = string(outputHost)
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
+
 		log.Println("---UNAME---", uName)
 	} else {
 		host = "127.0.0.1"
