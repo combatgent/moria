@@ -102,6 +102,8 @@ func (exchange *Exchange) Watch() {
 	go func() {
 		for {
 			r, err := watcher.Next(context.Background())
+			log.Printf("OUTER: Got Response: %v\nOUTER: Executed on node key: %v", r.Action, r.Node.Key)
+
 			if err != nil {
 				color.Set(color.FgRed)
 				log.Println(err)
@@ -114,6 +116,7 @@ func (exchange *Exchange) Watch() {
 		log.Println("Running For Loop")
 		select {
 		case response := <-receiver:
+			log.Printf("INNER: Got Response: %v\nINNER: Executed on node key: %v", response.Action, response.Node.Key)
 			if response.Action == "set" {
 				registerNodes(exchange, response.Node)
 			} else if response.Action == "delete" {
