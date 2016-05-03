@@ -63,10 +63,14 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 		}
 	}
 	// Add a new pattern handler for the pattern and address.
-	log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
-	addresses := []string{address}
-	handler := PatternHandler{Pattern: pattern, Addresses: addresses}
-	mux.routes[method] = append(handlers, &handler)
+	if strings.Compare(address, "") == 0 {
+		log.Printf("\n>\t%v\n>\tAddress: %v", pDisappointedInline("Tried to register \"\" as a valid host please avoid if at all possible"), address)
+	} else {
+		log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
+		addresses := []string{address}
+		handler := PatternHandler{Pattern: pattern, Addresses: addresses}
+		mux.routes[method] = append(handlers, &handler)
+	}
 }
 
 // Remove unregisters the address of a backend service as a handler for an
@@ -132,6 +136,8 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 	// If it is not ""
 	if address != "" {
 		handler.Addresses = append(handler.Addresses, address)
+	} else {
+		log.Printf("\n>\t%v\n>\tAddress: %v", pDisappointedInline("Tried to register \"\" as a valid host please avoid if at all possible"), address)
 	}
 	return
 }
