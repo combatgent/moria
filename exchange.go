@@ -143,22 +143,19 @@ func (exchange *Exchange) Watch() {
 			if response.Action == "set" {
 				splitKeys := strings.Split(response.Node.Key, "/")
 				if splitKeys[len(splitKeys)-1] == "routes" {
-					log.Println("\n\t\t\t\tModifying Routes")
-					log.Println("\n********************************************************************************")
+					log.Println("\n\t\t\t\tModifying Routes\n********************************************************************************")
 					getRootNode(response.Node.Key)
 					resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
 					registerNode(exchange, resp.Node)
 				} else {
-					log.Println("\n\t\t\t\tModifying Hosts")
-					log.Println("\n********************************************************************************")
+					log.Println("\n\t\t\t\tModifying Hosts\n********************************************************************************")
 					go func(exchange *Exchange, node *client.Node) {
 						registerNode(exchange, node)
 					}(exchange, response.Node)
 				}
 			} else if response.Action == "delete" {
 				go func(exchange *Exchange, prevNode *client.Node) {
-					log.Println("\n\t\t\t\tDeleting Hosts")
-					log.Println("\n********************************************************************************")
+					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
 					unregisterNode(exchange, prevNode)
 				}(exchange, response.PrevNode)
 			}
