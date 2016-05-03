@@ -168,6 +168,7 @@ func Host(k string) string {
 			}
 		}
 	}
+	log.Printf("{[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[    RETURN HOSTS     ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}\n%v", host)
 	return host
 }
 

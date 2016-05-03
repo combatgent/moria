@@ -264,6 +264,8 @@ func unregisterNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
+
+		log.Printf("[[[[[[[[[[[[[[[[[[[[[[[Mathced a HOST NEED TO AQUIRE ServiceRecord]]]]]]]]]]]]]]]]]]]]]]]\n%v", ID(n.Key))
 		if service, ok := exchange.services[ID(n.Key)]; ok {
 			host := Host(n.Key)
 			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
