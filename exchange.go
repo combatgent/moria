@@ -155,16 +155,12 @@ func (exchange *Exchange) Watch() {
 				} else {
 					log.Println("Modifying Hosts")
 					log.Println("********************************************************************************")
-					go func(exchange *Exchange, node *client.Node) {
-						registerNode(exchange, node)
-					}(exchange, response.Node)
+					registerNode(exchange, response.Node)
 				}
 			} else if response.Action == "delete" {
-				go func(exchange *Exchange, prevNode *client.Node) {
-					log.Println("Deleting Hosts")
-					log.Println("********************************************************************************")
-					unregisterNode(exchange, prevNode)
-				}(exchange, response.PrevNode)
+				log.Println("Deleting Hosts")
+				log.Println("********************************************************************************")
+				unregisterNode(exchange, response.PrevNode)
 			}
 		}
 	}

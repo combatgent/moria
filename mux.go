@@ -68,7 +68,6 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	fmt.Printf("%v %v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern)
 	fmt.Printf("%v %v\n", pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
 	fmt.Printf("%v %v\n", pSuccessInline("Service Located At:"), address)
-
 	addresses := []string{address}
 	handler := PatternHandler{Pattern: pattern, Addresses: addresses}
 	mux.routes[method] = append(handlers, &handler)
@@ -138,7 +137,7 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 			return
 		}
 	}
-	// Do not add a new address to an existing pattern handler.
+	// Add a new address to an existing pattern handler.
 	handler.Addresses = append(handler.Addresses, address)
 	return
 }
