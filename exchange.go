@@ -127,6 +127,7 @@ func gatewayNamespace() (string, string) {
 	var hostErr, uNameErr error
 	var outputHost, outputUName []byte
 	outputUName, uNameErr = exec.Command("uname -mrs").Output()
+	log.Println("Outside:"string(outputUName))
 	if !strings.Contains(string(outputUName), "Darwin") {
 		outputUName, uNameErr = exec.Command("uname -n").Output()
 		outputHost, hostErr = exec.Command("$(ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1)").Output()
