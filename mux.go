@@ -119,11 +119,12 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 	conflictValues := string(a)
 	c.Set(context.Background(), conflictKey, conflictValues, opts)
 	for _, existingAddress := range handler.Addresses {
-		log.Printf("\n>\t%v!=%v", address, existingAddress)
 		if strings.Compare(address, existingAddress) == 0 {
 			duplicateKey := "/gateway/conflicts/duplicates/" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
 			c.Set(context.Background(), duplicateKey, address, opts)
 			return
+		} else {
+			log.Printf("\n>\t%v!=%v", address, existingAddress)
 		}
 	}
 	//log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
