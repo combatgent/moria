@@ -65,7 +65,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	// Add a new pattern handler for the pattern and address.
 	if strings.Compare(address, "") == 0 {
 		log.Printf("\n>\t%v\n>\tAddress: %v", pDisappointedInline("Tried to register \"\" as a valid host please avoid if at all possible"), address)
-		log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pDisappointedInline("Not Registering Route:"), pMethod(method), pattern, pDisappointedInline("Route Could Not Be Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pDisappointedInline("Service Could Not Have Been Located At:"), address)
+		log.Printf("\n>********************** New Service Could Not Be Dicovered *********************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pDisappointedInline("Not Registering Route:"), pMethod(method), pattern, pDisappointedInline("Route Could Not Be Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pDisappointedInline("Service Could Not Have Been Located At:"), address)
 	} else {
 		log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
 		addresses := []string{address}
