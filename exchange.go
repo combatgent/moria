@@ -63,47 +63,51 @@ func (exchange *Exchange) Init() error {
 
 func registerNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		pInfo("Checking &Key: %v\n", n.Key)
-		if MatchEnv(n.Key) {
-			defer func() {
-				if perr := recover(); perr != nil {
-					var ok bool
-					perr, ok = perr.(error)
-					if !ok {
-						fmt.Errorf("Panicking: %v", perr)
-					}
+		registerNode(exchange, n)
+	}
+}
+
+func registerNode(exchange *Exchange, n *client.Node) {
+	pInfo("Checking &Key: %v\n", n.Key)
+	if MatchEnv(n.Key) {
+		defer func() {
+			if perr := recover(); perr != nil {
+				var ok bool
+				perr, ok = perr.(error)
+				if !ok {
+					fmt.Errorf("Panicking: %v", perr)
 				}
-			}()
-			pSuccess("Found Matching Key: %v\n", n.Key)
-			service := exchange.load(n.Value)
-			service.ID = ID(n.Key)
-			host := Host(n.Key)
-			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
-			CheckEtcdErrors(err)
-			for _, rn := range resp.Node.Nodes {
-				service.Address = rn.Value
-				exchange.Register(service)
 			}
-		} else if MatchHostsEnv(n.Key) {
-			defer func() {
-				if perr := recover(); perr != nil {
-					var ok bool
-					perr, ok = perr.(error)
-					if !ok {
-						fmt.Errorf("Panicking: %v", perr)
-					}
+		}()
+		pSuccess("Found Matching Key: %v\n", n.Key)
+		service := exchange.load(n.Value)
+		service.ID = ID(n.Key)
+		host := Host(n.Key)
+		resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
+		CheckEtcdErrors(err)
+		for _, rn := range resp.Node.Nodes {
+			service.Address = rn.Value
+			exchange.Register(service)
+		}
+	} else if MatchHostsEnv(n.Key) {
+		defer func() {
+			if perr := recover(); perr != nil {
+				var ok bool
+				perr, ok = perr.(error)
+				if !ok {
+					fmt.Errorf("Panicking: %v", perr)
 				}
-			}()
-			pSuccess("Found Matching Hosts Key: %v\n", n.Key)
-			if service, ok := exchange.services[ID(n.Key)]; ok {
-				service.Address = n.Value
-				log.Println("Registering new Host")
-				exchange.Register(service)
 			}
+		}()
+		pSuccess("Found Matching Hosts Key: %v\n", n.Key)
+		if service, ok := exchange.services[ID(n.Key)]; ok {
+			service.Address = n.Value
+			log.Println("Registering new Host")
+			exchange.Register(service)
 		}
-		if n.Nodes.Len() > 0 {
-			registerNodes(exchange, n)
-		}
+	}
+	if n.Nodes.Len() > 0 {
+		registerNodes(exchange, n)
 	}
 }
 
@@ -120,7 +124,6 @@ func (exchange *Exchange) Watch() {
 		for {
 			r, err := watcher.Next(context.Background())
 			log.Printf("OUTER: Got Response: %v\nOUTER: Executed on node key: %v", r.Action, r.Node.Key)
-
 			if err != nil {
 				color.Set(color.FgRed)
 				log.Println(err)
@@ -135,17 +138,20 @@ func (exchange *Exchange) Watch() {
 		ctx := context.TODO()
 		select {
 		case response := <-receiver:
-
 			log.Printf("INNER: Got Response: %v\nINNER: Executed on node key: %v", response.Action, response.Node.Key)
 			if response.Action == "set" {
-				log.Println("Registering Node")
+				log.Println("********************************************************************************")
 				splitKeys := strings.Split(response.Node.Key, "/")
 				if splitKeys[len(splitKeys)-1] == "routes" {
+					log.Println("Modifying Routes")
+					log.Println("********************************************************************************")
 					getRootNode(response.Node.Key)
 					resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
-					registerNodes(exchange, resp.Node)
+					registerNode(exchange, resp.Node)
 				} else {
-					registerNodes(exchange, response.Node)
+					log.Println("Modifying Hosts")
+					log.Println("********************************************************************************")
+					registerNode(exchange, response.Node)
 				}
 			} else if response.Action == "delete" {
 				unregisterNodes(exchange, response.Node)
@@ -163,7 +169,6 @@ func getRootNode(key string) string {
 			rootkey += v + "/"
 		}
 	}
-	log.Println("ROOT KEY:", rootkey)
 	return rootkey
 }
 
