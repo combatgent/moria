@@ -79,15 +79,17 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 func (mux *Mux) Remove(method, pattern, address, service string) {
 	log.Println("\n\n\n\n\n\n\n\n((((((((((((((((((( INSIDE REMOVE  )))))))))))))))))))\n\n\n\n\n\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 	mux.rw.Lock()
+	log.Println("\n\n\n\n\n\n\n\n((((((((((((((((((( INSIDE LOCKED STATE  )))))))))))))))))))\n\n\n\n\n\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
 	if !present {
-		log.Println("|||||||||||||||||||||||||||||||||||||              NOT PRESENT               |||||||||||||||||||||||||||||||||||||||||")
+		log.Println("\n|||||||||||||||||||||||||||||||||||||              NOT PRESENT               |||||||||||||||||||||||||||||||||||||||||")
 		for _, h := range handlers {
 			log.Printf("HANDLER:\n%+v\n\n", h)
 		}
 		return
 	}
+	log.Println("\n|||||||||||||||||||||||||||||||||||||              TOTALLY PRESENT               |||||||||||||||||||||||||||||||||||||||||")
 	log.Println("*********************** Unregisterring Service Host ***********************")
 	log.Printf("%v %v %v\n", pSuccessInline("EuRegistering Route:"), pMethod(method), pattern)
 
