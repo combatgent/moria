@@ -129,7 +129,10 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 	}
 	//log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
 	// Add a new address to an existing pattern handler.
-	handler.Addresses = append(handler.Addresses, address)
+	// If it is not ""
+	if address != "" {
+		handler.Addresses = append(handler.Addresses, address)
+	}
 	return
 }
 
