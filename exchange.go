@@ -42,7 +42,7 @@ func (exchange *Exchange) Init() error {
 			var ok bool
 			perr, ok = perr.(error)
 			if !ok {
-				fmt.Errorf("Panicking: %v", perr)
+				log.Errorf("Panicking: %v", perr)
 			}
 		}
 	}()
@@ -77,7 +77,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				var ok bool
 				perr, ok = perr.(error)
 				if !ok {
-					fmt.Errorf("Panicking: %v", perr)
+					log.Errorf("Panicking: %v", perr)
 				}
 			}
 		}()
@@ -97,7 +97,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				var ok bool
 				perr, ok = perr.(error)
 				if !ok {
-					fmt.Errorf("Panicking: %v", perr)
+					log.Errorf("Panicking: %v", perr)
 				}
 			}
 		}()
@@ -195,22 +195,18 @@ func gatewayNamespace() (string, string) {
 	var host, uName, outputUName, outputHost string
 	var hostErr, uNameErr error
 	outputUName, uNameErr = os.Hostname()
-	log.Println("Outside:", outputUName)
 	if !strings.Contains(outputUName, ".local") {
 		outputHost = getIPAddress()
-		if hostErr != nil {
-			log.Println("Unable to publish dyno address", hostErr)
-		} else if uNameErr != nil {
-			log.Println("Unable to publish dyno uName", hostErr)
+		if uNameErr != nil {
+			log.Printf("\n>\tUnable To Publish Dyno UName\n>\t%+v", hostErr)
 		}
 		host = string(outputHost)
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
-
-		log.Println("---UNAME---", uName)
+		log.Printf("\n>\tUNAME:\n>%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
 	} else {
 		host = "127.0.0.1"
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
-		log.Println("---UNAME---", uName)
+		log.Printf("\n>\tUNAME:\n>%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
 	}
 	return strings.Join([]string{host, ":", os.Getenv("PORT")}, ""), uName
 }
