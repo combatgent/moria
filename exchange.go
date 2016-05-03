@@ -134,6 +134,7 @@ func (exchange *Exchange) Watch() {
 		ctx := context.TODO()
 		select {
 		case response := <-receiver:
+
 			log.Printf("INNER: Got Response: %v\nINNER: Executed on node key: %v", response.Action, response.Node.Key)
 			if response.Action == "set" {
 				log.Println("Registering Node")
