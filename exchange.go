@@ -121,8 +121,8 @@ func (exchange *Exchange) Watch() {
 			log.Printf("INNER: Got Response: %v\nINNER: Executed on node key: %v", response.Action, response.Node.Key)
 			if response.Action == "set" {
 				log.Println("Registering Node")
-				getRootNode()
-				resp, err := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
+				getRootNode(response.Node.Key)
+				resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
 				registerNodes(exchange, resp.Node)
 			} else if response.Action == "delete" {
 				unregisterNodes(exchange, response.Node)
@@ -131,7 +131,7 @@ func (exchange *Exchange) Watch() {
 	}
 }
 
-func getRootNode(key string) string{
+func getRootNode(key string) string {
 
 	rootkey := ""
 	splitKeys := strings.Split(key, "/")
@@ -140,7 +140,7 @@ func getRootNode(key string) string{
 			rootkey += v + "/"
 		}
 	}
-	fmt.Println("ROOT KEY:"rootkey)
+	log.Println("ROOT KEY:", rootkey)
 	return rootkey
 }
 
