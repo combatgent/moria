@@ -224,8 +224,8 @@ func findHost(mux *Mux, request *http.Request, writer http.ResponseWriter, addre
 func (mux *Mux) Match(method, pattern string) (*[]string, error) {
 	mux.rw.RLock()
 	defer mux.rw.RUnlock()
-	log.Println("------------------------Matching Pattern-----------------------------")
 	handlers, present := mux.routes[method]
+	log.Println("------------------------Matching Pattern-----------------------------\nPresent is", present)
 	if present {
 		for _, handler := range handlers {
 			if handler.Match(pattern) {
