@@ -123,13 +123,12 @@ func (exchange *Exchange) Watch() {
 }
 
 func gatewayNamespace() (string, string) {
-	var host, uName string
+	var host, uName, outputUName string
 	var hostErr, uNameErr error
-	var outputHost, outputUName []byte
-	outputUName, uNameErr = exec.Command("$(uname -mrs)").Output()
-	log.Println("Outside:", string(outputUName))
-	if !strings.Contains(string(outputUName), "Darwin") {
-		outputUName, uNameErr = exec.Command("uname -n").Output()
+	var outputHost []byte
+	outputUName, uNameErr = os.Hostname()
+	log.Println("Outside:", outputUName)
+	if !strings.Contains(outputUName, "Darwin") {
 		outputHost, hostErr = exec.Command("$(ip -4 -o addr show dev eth1 | awk '{print $4}' | cut -d/ -f1)").Output()
 		if hostErr != nil {
 			log.Println("Unable to publish dyno address", hostErr)
@@ -140,7 +139,6 @@ func gatewayNamespace() (string, string) {
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
 		log.Println("---UNAME---", uName)
 	} else {
-		outputUName, uNameErr = exec.Command("uname -mrs").Output()
 		host = "127.0.0.1"
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
 		log.Println("---UNAME---", uName)
