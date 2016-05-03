@@ -81,7 +81,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
-		pSuccess("Found Matching Key: %v\n", n.Key)
+		log.Printf("\n>\tFound Matching Key:\n>\t%v\n", pSuccessInline(n.Key))
 		service := exchange.load(n.Value)
 		service.ID = ID(n.Key)
 		host := Host(n.Key)
@@ -101,10 +101,9 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
-		pSuccess("Found Matching Hosts Key: %v\n", n.Key)
+		log.Printf("\n>\tFound Matching Hosts Key:\n>\t%v\n", pSuccessInline(n.Key))
 		if service, ok := exchange.services[ID(n.Key)]; ok {
 			service.Address = n.Value
-			log.Println("Registering new Host")
 			exchange.Register(service)
 		}
 	}
@@ -293,6 +292,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
 			pattern = "/api" + pattern
+			log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
 			exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
 		}
 	}

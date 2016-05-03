@@ -161,14 +161,11 @@ func Host(k string) string {
 			host += w + "/"
 		} else {
 			splitKeys := strings.Split(strings.TrimSuffix(host, "/"), "/")
-			log.Println("{[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[     HOSTS     ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}")
-			log.Println(splitKeys, splitKeys[len(splitKeys)-1])
 			if splitKeys[len(splitKeys)-1] != "hosts" {
 				host += "/hosts"
 			}
 		}
 	}
-	log.Printf("{[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[    RETURN HOSTS     ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}\n%v", host)
 	return host
 }
 
