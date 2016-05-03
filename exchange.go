@@ -137,10 +137,12 @@ func gatewayNamespace() (string, string) {
 		}
 		host = string(outputHost)
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
+		log.Println("---UNAME---", uName)
 	} else {
 		outputUName, uNameErr = exec.Command("uname -mrs").Output()
 		host = "127.0.0.1"
 		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
+		log.Println("---UNAME---", uName)
 	}
 	return strings.Join([]string{host, ":", os.Getenv("PORT")}, ""), uName
 }
