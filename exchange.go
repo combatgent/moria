@@ -42,7 +42,7 @@ func (exchange *Exchange) Init() error {
 			var ok bool
 			perr, ok = perr.(error)
 			if !ok {
-				log.Errorf("Panicking: %v", perr)
+				log.Printf("Panicking: %v", perr)
 			}
 		}
 	}()
@@ -77,7 +77,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				var ok bool
 				perr, ok = perr.(error)
 				if !ok {
-					log.Errorf("Panicking: %v", perr)
+					log.Printf("Panicking: %v", perr)
 				}
 			}
 		}()
@@ -97,7 +97,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				var ok bool
 				perr, ok = perr.(error)
 				if !ok {
-					log.Errorf("Panicking: %v", perr)
+					log.Printf("Panicking: %v", perr)
 				}
 			}
 		}()
