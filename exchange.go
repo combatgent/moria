@@ -117,6 +117,12 @@ func registerNode(exchange *Exchange, n *client.Node) {
 // necessary, with the ExchangeServeMux.  This blocking call will terminate
 // when a value is received on the stop channel.
 func (exchange *Exchange) Watch() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("\n\n\n\n\n\n\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\t%+v", err)
+			exchange.Watch()
+		}
+	}()
 	ns := Namespace()
 	opts := EtcdWatcherOptions(exchange.waitIndex)
 	watcher := exchange.client.Watcher(ns, opts)
