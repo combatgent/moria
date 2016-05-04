@@ -77,18 +77,19 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 // Remove unregisters the address of a backend service as a handler for an
 // HTTP method and URL pattern.
 func (mux *Mux) Remove(method, pattern, address, service string) {
+	pattern = "api/" + pattern
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
 	if !present {
 		return
 	}
-	log.Println("*********************** Unregisterring Service Host ***********************")
-	log.Printf("\n>\t%v %v %v\n", pSuccessInline("Unregistering Route:"), pMethod(method), pattern)
 
-	log.Printf("\n>\t%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
 	// Find the handler registered for the pattern.
 	for i, handler := range handlers {
+		log.Println("*********************** Unregisterring Service Host ***********************")
+		log.Printf("\n>\t%v %v %v\n", pSuccessInline("Unregistering Route:"), pMethod(method), pattern)
+		log.Printf("\n>\t%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
 		if pattern == handler.Pattern {
 			// Remove the handler if the address to remove is the only one
 			// registered.
