@@ -178,8 +178,13 @@ func (exchange *Exchange) Watch() {
 					registerNode(exchange, response.Node)
 				}
 			} else {
-				log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
-				log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
+				if MatchHostsEnv(response.Node.Key) {
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
+				} else if MatchEnv(response.Node.Key) {
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: %v", response.Action)
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE ROUTES: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
+				}
 			}
 		}
 	}
