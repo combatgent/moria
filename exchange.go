@@ -144,7 +144,7 @@ func (exchange *Exchange) Watch() {
 		ctx := context.TODO()
 		select {
 		case response := <-receiver:
-			go func(response *client.Response) {
+			go func(response *client.Response, exchange *Exchange) {
 				if strings.Compare(response.Action, "set") == 0 {
 					splitKeys := strings.Split(response.Node.Key, "/")
 					if splitKeys[len(splitKeys)-1] == "routes" {
@@ -184,7 +184,7 @@ func (exchange *Exchange) Watch() {
 						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE ROUTES: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
 					}
 				}
-			}(response)
+			}(response, exchange)
 		}
 	}
 }
