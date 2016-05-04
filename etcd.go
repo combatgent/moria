@@ -120,7 +120,7 @@ func MatchEnv(k string) bool {
 	key := strings.TrimPrefix(k, "/")
 	keyEnv := strings.Split(key, "/")
 	if len(keyEnv) > 3 {
-		if (keyEnv[2] == os.Getenv("GO_ENV")) && (keyEnv[3] == "routes") {
+		if (keyEnv[2] == os.Getenv("VINE_ENV")) && (keyEnv[3] == "routes") {
 			return true
 		}
 	}
@@ -133,7 +133,7 @@ func MatchHostsEnv(k string) bool {
 	key := strings.TrimPrefix(k, "/")
 	keyEnv := strings.Split(key, "/")
 	if len(keyEnv) > 3 {
-		if (keyEnv[2] == os.Getenv("GO_ENV")) && (keyEnv[3] == "hosts") {
+		if (keyEnv[2] == os.Getenv("VINE_ENV")) && (keyEnv[3] == "hosts") {
 			return true
 		}
 	}

@@ -118,7 +118,7 @@ func TestEtcdWatcherOptions(t *testing.T) {
 }
 
 func TestMatchEnvTrue(t *testing.T) {
-	os.Setenv("GO_ENV", "test")
+	os.Setenv("VINE_ENV", "test")
 	s := "/services/tower-products-api/test/routes"
 	valid := moria.MatchEnv(s)
 	if !valid {
@@ -127,7 +127,7 @@ func TestMatchEnvTrue(t *testing.T) {
 }
 
 func TestMatchEnvFalseNotEnv(t *testing.T) {
-	os.Setenv("GO_ENV", "test")
+	os.Setenv("VINE_ENV", "test")
 	s := "/services/tower-products-api/not-test/routes"
 	valid := moria.MatchEnv(s)
 	if valid {
@@ -136,7 +136,7 @@ func TestMatchEnvFalseNotEnv(t *testing.T) {
 }
 
 func TestMatchEnvFalseNotRoutes(t *testing.T) {
-	os.Setenv("GO_ENV", "test")
+	os.Setenv("VINE_ENV", "test")
 	s := "/services/tower-products-api/test/not-routes"
 	valid := moria.MatchEnv(s)
 	if valid {

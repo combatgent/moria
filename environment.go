@@ -22,7 +22,7 @@ var pBold = color.New(color.FgHiWhite, color.Bold).SprintfFunc()
 
 // required
 var required = [...]string{
-	"GO_ENV",
+	"VINE_ENV",
 	"ETCD_USERNAME",
 	"ETCD_PASSWORD",
 	"ETCD_CA_STRING",
@@ -40,7 +40,7 @@ func Environment() string {
 	loadEnvironment()
 	checkRequired()
 	checkOptional()
-	environment := os.Getenv("GO_ENV")
+	environment := os.Getenv("VINE_ENV")
 	return environment
 }
 
@@ -75,7 +75,7 @@ func loadPath(path string) error {
 
 // checkRequired ensures necessary config vars are present
 // Minimum Required Vars Include:
-//  * GO_ENV
+//  * VINE_ENV
 //  * ETCD_USERNAME
 //  * ETCD_PASSWORD
 //  * ETCD_HOST

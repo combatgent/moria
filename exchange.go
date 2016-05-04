@@ -217,11 +217,11 @@ func gatewayNamespace() (string, string) {
 			log.Printf("\n>\tUnable To Publish Dyno UName\n>\t%+v", hostErr)
 		}
 		host = string(outputHost)
-		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
+		uName = "/gateway/environments/" + os.Getenv("VINE_ENV") + "/" + string(outputUName)
 		log.Printf("\n>\tUNAME:\n>%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
 	} else {
 		host = "127.0.0.1"
-		uName = "/gateway/environments/" + os.Getenv("GO_ENV") + "/" + string(outputUName)
+		uName = "/gateway/environments/" + os.Getenv("VINE_ENV") + "/" + string(outputUName)
 		log.Printf("\n>\tUNAME:\n>%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
 	}
 	return strings.Join([]string{host, ":", os.Getenv("PORT")}, ""), uName

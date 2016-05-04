@@ -114,7 +114,7 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 }
 
 func handleDuplicates(handler PatternHandler, method string, pattern string, address string, service string, c client.KeysAPI) {
-	conflictKey := "/gateway/conflicts/" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
+	conflictKey := "/gateway/conflicts/" + service + "/" + os.Getenv("VINE_ENV") + "/" + pattern
 	var conf conflict
 	conf.ExistingAddresses = handler.Addresses
 	conf.AttemptedConflict = address
@@ -128,7 +128,7 @@ func handleDuplicates(handler PatternHandler, method string, pattern string, add
 	c.Set(context.Background(), conflictKey, conflictValues, opts)
 	for _, existingAddress := range handler.Addresses {
 		if strings.Compare(address, existingAddress) == 0 {
-			duplicateKey := "/gateway/conflicts/duplicates/" + service + "/" + os.Getenv("GO_ENV") + "/" + pattern
+			duplicateKey := "/gateway/conflicts/duplicates/" + service + "/" + os.Getenv("VINE_ENV") + "/" + pattern
 			c.Set(context.Background(), duplicateKey, address, opts)
 			return
 		} else {
