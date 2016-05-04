@@ -158,6 +158,7 @@ func (exchange *Exchange) Watch() {
 				}(exchange, response.PrevNode)
 			} else {
 				log.Printf("\n>\tUNCAUGHT RESPONSE ACTION: %v", response.Action)
+				log.Printf("\n>\tUNCAUGHT RESPONSE VALUE: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE: <%v>", response.Node.Value, response.PrevNode.Value)
 			}
 		}
 	}
