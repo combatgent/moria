@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -224,6 +225,13 @@ func (exchange *Exchange) PublishLocation() {
 	go func() {
 		for {
 			time.Sleep(5 * time.Second)
+		  for _, method := range []string{"GET", "PUT","POST","DELETE","PATCH"}{
+				if arr, ok := exchange.mux.routes[method]; ok{
+					for _, handler := arr {
+						log.Printf("\n>\tHANDLER: %+v\n", handler)
+					}
+				}
+			}
 			resp, err := exchange.client.Set(context.Background(), key, address, opts)
 			if err != nil {
 				log.Println("ERROR: ", err)
