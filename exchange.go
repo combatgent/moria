@@ -144,52 +144,50 @@ func (exchange *Exchange) Watch() {
 		ctx := context.TODO()
 		select {
 		case response := <-receiver:
-			go func(response *client.Response, exchange *Exchange) {
-				log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
-				if strings.Compare(response.Action, "set") == 0 {
-					splitKeys := strings.Split(response.Node.Key, "/")
-					if splitKeys[len(splitKeys)-1] == "routes" {
-						log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
-						getRootNode(response.Node.Key)
-						resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
-						registerNode(exchange, resp.Node)
-					} else {
-						log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
-						go func(exchange *Exchange, node *client.Node) {
-							registerNode(exchange, node)
-						}(exchange, response.Node)
-					}
-				} else if strings.Compare(response.Action, "delete") == 0 {
-					go func(exchange *Exchange, prevNode *client.Node) {
-						log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
-						unregisterNode(exchange, prevNode)
-					}(exchange, response.PrevNode)
-				} else if strings.Compare(response.Action, "expire") == 0 {
-					if MatchEnv(response.Node.Key) {
-						log.Println("\n\t\t\t\tExpiring Routes\n********************************************************************************")
-						unregisterNode(exchange, response.PrevNode)
-					} else if MatchHostsEnv(response.Node.Key) {
-						log.Println("\n\t\t\t\tExpiringing Hosts\n********************************************************************************")
-						unregisterNode(exchange, response.PrevNode)
-					}
-				} else if strings.Compare(response.Action, "update") == 0 {
-					if MatchHostsEnv(response.Node.Key) {
-						log.Println("\n\t\t\t\tUpdating Hosts\n********************************************************************************")
-						registerNode(exchange, response.Node)
-					} else if MatchEnv(response.Node.Key) {
-						log.Println("\n\t\t\t\tUpdating Routes\n********************************************************************************")
-						registerNode(exchange, response.Node)
-					}
+			log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
+			if strings.Compare(response.Action, "set") == 0 {
+				splitKeys := strings.Split(response.Node.Key, "/")
+				if splitKeys[len(splitKeys)-1] == "routes" {
+					log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
+					getRootNode(response.Node.Key)
+					resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
+					registerNode(exchange, resp.Node)
 				} else {
-					if MatchHostsEnv(response.Node.Key) {
-						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
-						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
-					} else if MatchEnv(response.Node.Key) {
-						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: %v", response.Action)
-						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE ROUTES: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
-					}
+					log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
+					go func(exchange *Exchange, node *client.Node) {
+						registerNode(exchange, node)
+					}(exchange, response.Node)
 				}
-			}(response, exchange)
+			} else if strings.Compare(response.Action, "delete") == 0 {
+				go func(exchange *Exchange, prevNode *client.Node) {
+					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
+					unregisterNode(exchange, prevNode)
+				}(exchange, response.PrevNode)
+			} else if strings.Compare(response.Action, "expire") == 0 {
+				if MatchEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tExpiring Routes\n********************************************************************************")
+					unregisterNode(exchange, response.PrevNode)
+				} else if MatchHostsEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tExpiringing Hosts\n********************************************************************************")
+					unregisterNode(exchange, response.PrevNode)
+				}
+			} else if strings.Compare(response.Action, "update") == 0 {
+				if MatchHostsEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tUpdating Hosts\n********************************************************************************")
+					registerNode(exchange, response.Node)
+				} else if MatchEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tUpdating Routes\n********************************************************************************")
+					registerNode(exchange, response.Node)
+				}
+			} else {
+				if MatchHostsEnv(response.Node.Key) {
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
+				} else if MatchEnv(response.Node.Key) {
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: %v", response.Action)
+					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE ROUTES: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
+				}
+			}
 		}
 	}
 }
