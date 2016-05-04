@@ -81,7 +81,6 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
-		log.Printf("\n>\tFound Matching Key:\n>\t%v\n", pSuccessInline(n.Key))
 		service := exchange.load(n.Value)
 		service.ID = ID(n.Key)
 		host := Host(n.Key)
@@ -157,6 +156,8 @@ func (exchange *Exchange) Watch() {
 					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
 					unregisterNode(exchange, prevNode)
 				}(exchange, response.PrevNode)
+			} else {
+				log.Printf("\n>\tUNCAUGHT RESPONSE ACTION: %v", resp.Action)
 			}
 		}
 	}
