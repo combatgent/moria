@@ -81,7 +81,6 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
-		log.Printf("Matched Key: %v", n.Key)
 		log.Printf("\n>\tFound Matching Key:\n>\t%v\n", pSuccessInline(n.Key))
 		service := exchange.load(n.Value)
 		service.ID = ID(n.Key)
