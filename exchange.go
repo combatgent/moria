@@ -145,15 +145,16 @@ func (exchange *Exchange) Watch() {
 		select {
 		case response := <-receiver:
 			go func(response *client.Response, exchange *Exchange) {
+				log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
 				if strings.Compare(response.Action, "set") == 0 {
 					splitKeys := strings.Split(response.Node.Key, "/")
 					if splitKeys[len(splitKeys)-1] == "routes" {
-						log.Println("\n\t\t\t\tModifying Routes\n********************************************************************************")
+						log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
 						getRootNode(response.Node.Key)
 						resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
 						registerNode(exchange, resp.Node)
 					} else {
-						log.Println("\n\t\t\t\tModifying Hosts\n********************************************************************************")
+						log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
 						go func(exchange *Exchange, node *client.Node) {
 							registerNode(exchange, node)
 						}(exchange, response.Node)
@@ -165,14 +166,18 @@ func (exchange *Exchange) Watch() {
 					}(exchange, response.PrevNode)
 				} else if strings.Compare(response.Action, "expire") == 0 {
 					if MatchEnv(response.Node.Key) {
+						log.Println("\n\t\t\t\tExpiring Routes\n********************************************************************************")
 						unregisterNode(exchange, response.PrevNode)
 					} else if MatchHostsEnv(response.Node.Key) {
+						log.Println("\n\t\t\t\tExpiringing Hosts\n********************************************************************************")
 						unregisterNode(exchange, response.PrevNode)
 					}
 				} else if strings.Compare(response.Action, "update") == 0 {
 					if MatchHostsEnv(response.Node.Key) {
+						log.Println("\n\t\t\t\tUpdating Hosts\n********************************************************************************")
 						registerNode(exchange, response.Node)
 					} else if MatchEnv(response.Node.Key) {
+						log.Println("\n\t\t\t\tUpdating Routes\n********************************************************************************")
 						registerNode(exchange, response.Node)
 					}
 				} else {
