@@ -165,23 +165,21 @@ func (exchange *Exchange) Watch() {
 					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
 					unregisterNode(exchange, prevNode)
 				}(exchange, response.PrevNode)
-			} else {
+			} else if strings.Compare(response.Action, "expire") == 0 {
 				if MatchEnv(response.Node.Key) {
-					if strings.Compare(response.Action, "expire") == 0 {
-						unregisterNode(exchange, response.PrevNode)
-					} else if strings.Compare(response.Action, "update") == 0 {
-						registerNode(exchange, response.Node)
-					}
+					unregisterNode(exchange, response.PrevNode)
 				} else if MatchHostsEnv(response.Node.Key) {
-					if strings.Compare(response.Action, "expire") == 0 {
-						unregisterNode(exchange, response.PrevNode)
-					} else if strings.Compare(response.Action, "update") == 0 {
-						registerNode(exchange, response.Node)
-					} else {
-						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
-						log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
-					}
+					unregisterNode(exchange, response.PrevNode)
 				}
+			} else if strings.Compare(response.Action, "update") == 0 {
+				if MatchHostsEnv(response.Node.Key) {
+					registerNode(exchange, response.Node)
+				} else if MatchEnv(response.Node.Key) {
+					registerNode(exchange, response.Node)
+				}
+			} else {
+				log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
+				log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
 			}
 		}
 	}
