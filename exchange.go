@@ -252,9 +252,10 @@ func (exchange *Exchange) PublishLocation() {
 			time.Sleep(5 * time.Second)
 			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
 				if arr, ok := exchange.mux.routes[method]; ok {
-					for _, handler := range arr {
-						log.Printf("\n>\tHANDLER: %+v\n", handler)
-					}
+					// for _, handler := range arr {
+					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
+					// }
+					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED PATTERNS: %v\n", len(arr))
 				}
 			}
 			resp, err := exchange.client.Set(context.Background(), key, address, opts)
