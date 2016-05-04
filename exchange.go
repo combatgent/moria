@@ -121,7 +121,7 @@ func (exchange *Exchange) Watch() {
 	opts := EtcdWatcherOptions(exchange.waitIndex)
 	watcher := exchange.client.Watcher(ns, opts)
 	receiver := make(chan *client.Response)
-	go func() {
+	go func(receiver chan *client.Response) {
 		for {
 			r, err := watcher.Next(context.Background())
 			if err != nil {
@@ -131,7 +131,7 @@ func (exchange *Exchange) Watch() {
 			}
 			receiver <- r
 		}
-	}()
+	}(receiver)
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("\n\n\n\n\n\n\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\t%+v", err)
