@@ -160,6 +160,11 @@ func (exchange *Exchange) Watch() {
 				if MatchEnv(response.Node.Key) {
 					log.Printf("\n>\tUNCAUGHT RESPONSE ACTION ROUTES: %v", response.Action)
 					log.Printf("\n>\tUNCAUGHT RESPONSE VALUE ROUTES: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE ROUTES:{%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
+					if strings.Compare(response.Action, "expire") == 0 {
+						unregisterNode(exchange, response.PrevNode)
+					} else if strings.Compare(response.Action, "update") == 0 {
+						registerNode(exchange, response.Node)
+					}
 				} else if MatchHostsEnv(response.Node.Key) {
 					log.Printf("\n>\tUNCAUGHT RESPONSE HOST: %v", response.Action)
 					log.Printf("\n>\tUNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)

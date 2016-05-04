@@ -84,16 +84,15 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 	if !present {
 		return
 	}
-
 	// Find the handler registered for the pattern.
 	for i, handler := range handlers {
-		log.Println("*********************** Unregisterring Service Host ***********************")
-		log.Printf("\n>\t%v %v %v\n", pSuccessInline("Unregistering Route:"), pMethod(method), pattern)
-		log.Printf("\n>\t%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
-		log.Printf("\n>\tPattern To Be Deleted: %v \n>\tPattern Stored: %v\n", pattern, handler.Pattern)
 		if strings.Compare(pattern, handler.Pattern) == 0 {
 			// Remove the handler if the address to remove is the only one
 			// registered.
+			log.Println("*********************** Unregisterring Service Host ***********************")
+			log.Printf("\n>\t%v %v %v\n", pSuccessInline("Unregistering Route:"), pMethod(method), pattern)
+			log.Printf("\n>\t%v %v\n", pSuccessInline("Service No Longer Located At:"), address)
+			log.Printf("\n>\tPattern To Be Deleted: %v \n>\tPattern Stored: %v\n", pattern, handler.Pattern)
 			if len(handler.Addresses) == 1 && handler.Addresses[0] == address {
 				log.Printf("\n>\t%v %v\n>\tRemoved Handler Entirely", pSuccessInline("Route No Longer Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))))
 				mux.routes[method] = append(handlers[:i], handlers[i+1:]...)
