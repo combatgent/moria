@@ -159,10 +159,10 @@ func (exchange *Exchange) Watch() {
 			} else {
 				if MatchEnv(response.Node.Key) {
 					log.Printf("\n>\tUNCAUGHT RESPONSE ACTION ROUTES: %v", response.Action)
-					log.Printf("\n>\tUNCAUGHT RESPONSE VALUE ROUTES: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE: <%v>", response.Node.Value, response.PrevNode.Value)
+					log.Printf("\n>\tUNCAUGHT RESPONSE VALUE ROUTES: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUEROUTES: <%v>", response.Node.Value, response.PrevNode.Value)
 				} else if MatchHostsEnv(response.Node.Key) {
 					log.Printf("\n>\tUNCAUGHT RESPONSE HOST: %v", response.Action)
-					log.Printf("\n>\tUNCAUGHT RESPONSE HOST: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE: <%v>", response.Node.Value, response.PrevNode.Value)
+					log.Printf("\n>\tUNCAUGHT RESPONSE HOST: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: <%v>", response.Node.Value, response.PrevNode.Value)
 				}
 			}
 		}
