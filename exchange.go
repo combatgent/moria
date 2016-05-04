@@ -157,8 +157,13 @@ func (exchange *Exchange) Watch() {
 					unregisterNode(exchange, prevNode)
 				}(exchange, response.PrevNode)
 			} else {
-				log.Printf("\n>\tUNCAUGHT RESPONSE ACTION: %v", response.Action)
-				log.Printf("\n>\tUNCAUGHT RESPONSE VALUE: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE: <%v>", response.Node.Value, response.PrevNode.Value)
+				if MatchEnv(response.Node.Key) {
+					log.Printf("\n>\tUNCAUGHT RESPONSE ACTION: %v", response.Action)
+					log.Printf("\n>\tUNCAUGHT RESPONSE VALUE: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE: <%v>", response.Node.Value, response.PrevNode.Value)
+				} else if MatchHostsEnv(response.Node.Key) {
+					log.Printf("\n>\tUNCAUGHT RESPONSE ACTION: %v", response.Action)
+					log.Printf("\n>\tUNCAUGHT RESPONSE VALUE: <%v>\n>\tUNCAUGHT RESPONSE PREV VALUE: <%v>", response.Node.Value, response.PrevNode.Value)
+				}
 			}
 		}
 	}
