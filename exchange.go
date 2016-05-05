@@ -136,13 +136,13 @@ func (exchange *Exchange) Watch() {
 	watcher := exchange.client.Watcher(ns, opts)
 	for true {
 		response, err := watcher.Next(context.TODO())
-		if response.Node != nil {
-			log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.Node.Key)
-		} else if response.PrevNode != nil {
-			log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
-		} else {
-			log.Printf("\n>\tRESPONDING TO:%v\n", response.Action)
-		}
+		// if response.Node != nil {
+		// 	log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.Node.Key)
+		// } else if response.PrevNode != nil {
+		// 	log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
+		// } else {
+		// 	log.Printf("\n>\tRESPONDING TO:%v\n", response.Action)
+		// }
 		if err != nil {
 			log.Printf("\n>RECEIVED ERROR RESPONDING TO:%v\n>\tFOR KEY:%v\n>\tERROR: %+v", response.Action, response.PrevNode.Key, err)
 			continue
@@ -254,14 +254,14 @@ func (exchange *Exchange) Watch() {
 			}
 		}
 		go func(exchange *Exchange) {
-			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
-				if arr, ok := exchange.mux.routes[method]; ok {
-					// for _, handler := range arr {
-					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
-					// }
-					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
-				}
-			}
+			// for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
+			// 	if arr, ok := exchange.mux.routes[method]; ok {
+			// 		// for _, handler := range arr {
+			// 		// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
+			// 		// }
+			// 		log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
+			// 	}
+			// }
 			address, key := gatewayNamespace()
 			opts := gatewaySetOpts()
 			_, err := exchange.client.Set(context.Background(), key, address, opts)

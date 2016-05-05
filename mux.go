@@ -130,6 +130,9 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		log.Printf("%v", pDisappointedInline("Invalid URL Pattern"))
 		return
 	}
+	go func(request *http.Request) {
+		log.Printf("\n>\tSERVING REQUEST:%v %v", request.Method, request.URL.String())
+	}(request)
 	// Make new request copy old stuff over
 	innerRequest := generateInnerRequest(request, address)
 	// Execute request
