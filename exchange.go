@@ -56,12 +56,15 @@ func (exchange *Exchange) Init() error {
 	for _, service := range services.Node.Nodes {
 		for _, environ := range service.Nodes {
 			if EnvMatch(environ.Key) {
+				log.Printf("\n>\tMatched Environment: %v", environ.Key)
 				var serviceRecord *ServiceRecord
 				var serviceMachines []*Machine
 				for _, config := range environ.Nodes {
-					if strings.Compare(config.Key, "routes") == 0 {
+					if strings.Compare(Tail(config.Key), "routes") == 0 {
+						log.Printf("\n>\tMatched Routes: %v", config.Key)
 						serviceRecord = exchange.load(config.Value, Name(service.Key))
-					} else if strings.Compare(config.Key, "hosts") == 0 {
+					} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
+						log.Printf("\n>\tMatched Hosts: %v", config.Key)
 						for _, host := range config.Nodes {
 							if strings.Compare(host.Value, "") != 0 {
 								serviceMachines = append(serviceMachines, &Machine{host.Key, host.Value})
@@ -124,50 +127,6 @@ func EnvKey(s string) string {
 	return strings.Join(strings.Split(strings.TrimPrefix(strings.TrimSuffix(s, "/"), "/"), "/")[:3], "/")
 }
 
-// func registerNodes(exchange *Exchange, node *client.Node) {
-// 	for _, n := range node.Nodes {
-// 		registerNode(exchange, n)
-// 	}
-// }
-//
-// func registerNode(exchange *Exchange, n *client.Node) {
-// 	if MatchEnv(n.Key) {
-// 		defer func() {
-// 			if perr := recover(); perr != nil {
-// 				var ok bool
-// 				perr, ok = perr.(error)
-// 				if !ok {
-// 					log.Printf("Panicking: %v", perr)
-// 				}
-// 			}
-// 		}()
-//
-// 		service := exchange.load(n.Value)
-// 		service.ID = ID(n.Key)
-// 		service.Address = n.Value
-// 		log.Printf("\n>\tSERVICE DETAILS:\n>\t%+v", service)
-// 		exchange.Register(service)
-// 	} else if MatchHostsEnv(n.Key) {
-// 		defer func() {
-// 			if perr := recover(); perr != nil {
-// 				var ok bool
-// 				perr, ok = perr.(error)
-// 				if !ok {
-// 					log.Printf("Panicking: %v", perr)
-// 				}
-// 			}
-// 		}()
-// 		log.Printf("\n>\tFound Matching Hosts Key:\n>\t%v\n", pSuccessInline(n.Key))
-// 		if service, ok := exchange.services[ID(n.Key)]; ok {
-// 			service.Address = n.Value
-// 			exchange.Register(service)
-// 		}
-// 	}
-// 	if n.Nodes.Len() > 0 {
-// 		registerNodes(exchange, n)
-// 	}
-// }
-
 // Watch observes changes in etcd and registers and unregisters services, as
 // necessary, with the ExchangeServeMux.  This blocking call will terminate
 // when a value is received on the stop channel.
@@ -192,6 +151,7 @@ func (exchange *Exchange) Watch() {
 		switch response.Action {
 		case "set", "update", "create", "compareAndSwap":
 			if EnvMatch(response.Node.Key) {
+				log.Printf("\n>\tMatched Environment: %v", response.Node.Key)
 				if strings.Compare("routes", Tail(response.Node.Key)) == 0 {
 					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
 					CheckEtcdErrors(err)
@@ -199,9 +159,11 @@ func (exchange *Exchange) Watch() {
 					var serviceRecord *ServiceRecord
 					var serviceMachines []*Machine
 					for _, config := range environ.Nodes {
-						if strings.Compare(config.Key, "routes") == 0 {
+						if strings.Compare(Tail(config.Key), "routes") == 0 {
+							log.Printf("\n>\tMatched Routes: %v", config.Key)
 							serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
-						} else if strings.Compare(config.Key, "hosts") == 0 {
+						} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
+							log.Printf("\n>\tMatched Hosts: %v", config.Key)
 							for _, host := range config.Nodes {
 								if strings.Compare(host.Value, "") != 0 {
 									serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
@@ -218,11 +180,38 @@ func (exchange *Exchange) Watch() {
 				}
 			} else if strings.Compare("hosts", TailMinusOne(response.Node.Key)) == 0 {
 				name := Name(response.Node.Key)
-				serviceRecord := exchange.load(exchange.serviceNameRoutes[Name(response.Node.Key)], name)
-				serviceRecord.ID = Tail(response.Node.Key)
-				serviceRecord.Address = response.Node.Value
-				serviceRecord.Name = name
-				exchange.Register(serviceRecord)
+				if serviceRoutes, ok := exchange.serviceNameRoutes[name]; ok {
+					serviceRecord := exchange.load(serviceRoutes, name)
+					serviceRecord.ID = Tail(response.Node.Key)
+					serviceRecord.Address = response.Node.Value
+					serviceRecord.Name = name
+					exchange.Register(serviceRecord)
+				} else {
+					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
+					CheckEtcdErrors(err)
+					environ := resp.Node
+					var serviceRecord *ServiceRecord
+					var serviceMachines []*Machine
+					for _, config := range environ.Nodes {
+						if strings.Compare(Tail(config.Key), "routes") == 0 {
+							log.Printf("\n>\tMatched Routes: %v", config.Key)
+							serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
+						} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
+							log.Printf("\n>\tMatched Hosts: %v", config.Key)
+							for _, host := range config.Nodes {
+								if strings.Compare(host.Value, "") != 0 {
+									serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
+								}
+							}
+						}
+					}
+					for _, machine := range serviceMachines {
+						serviceRecord.ID = machine.ID
+						serviceRecord.Address = machine.IP
+						serviceRecord.Name = Name(response.Node.Key)
+						exchange.Register(serviceRecord)
+					}
+				}
 			}
 		case "delete", "expire", "compareAndDelete":
 			if EnvMatch(response.Node.Key) {
@@ -273,7 +262,7 @@ func (exchange *Exchange) Watch() {
 			if err != nil {
 				log.Println("ERROR: ", err)
 			} else {
-				log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
+				//log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
 			}
 
 		}(exchange)
