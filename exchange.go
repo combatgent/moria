@@ -142,10 +142,20 @@ func (exchange *Exchange) Watch() {
 			if strings.Compare(response.Action, "set") == 0 {
 				if MatchHostsEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
-					registerNode(exchange, response.Node)
+					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
+					if err != nil {
+						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
+					} else {
+						registerNode(exchange, resp.Node)
+					}
 				} else if MatchEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
-					registerNode(exchange, response.Node)
+					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
+					if err != nil {
+						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
+					} else {
+						registerNode(exchange, resp.Node)
+					}
 				}
 			} else if strings.Compare(response.Action, "delete") == 0 {
 				if MatchHostsEnv(response.Node.Key) {
@@ -166,10 +176,20 @@ func (exchange *Exchange) Watch() {
 			} else if strings.Compare(response.Action, "update") == 0 {
 				if MatchHostsEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tUpdating Hosts\n********************************************************************************")
-					registerNode(exchange, response.Node)
+					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
+					if err != nil {
+						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
+					} else {
+						registerNode(exchange, resp.Node)
+					}
 				} else if MatchEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tUpdating Routes\n********************************************************************************")
-					registerNode(exchange, response.Node)
+					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
+					if err != nil {
+						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
+					} else {
+						registerNode(exchange, resp.Node)
+					}
 				}
 			} else {
 				if MatchHostsEnv(response.Node.Key) {
@@ -189,7 +209,7 @@ func getRootNode(key string) string {
 	rootkey := ""
 	splitKeys := strings.Split(key, "/")
 	for i, v := range splitKeys {
-		if i < (len(splitKeys) - 1) {
+		if i < 3 {
 			rootkey += v + "/"
 		}
 	}
