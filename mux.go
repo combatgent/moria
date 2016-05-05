@@ -2,19 +2,15 @@ package moria
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 
 	"github.com/coreos/etcd/client"
-	"golang.org/x/net/context"
 )
 
 type conflict struct {
@@ -58,20 +54,26 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	// Search for duplicates.
 	for _, handler := range handlers {
 		if pattern == handler.Pattern {
-			handleDuplicates(*handler, method, pattern, address, service, c)
+			handleDuplicates(handler, method, pattern, address, service, c)
 			return
 		}
 	}
 	// Add a new pattern handler for the pattern and address.
-	if strings.Compare(address, "") == 0 {
-		log.Printf("\n>\t%v\n>\tAddress: %v", pDisappointedInline("Tried to register \"\" as a valid host please avoid if at all possible"), address)
-		log.Printf("\n>********************** New Service Could Not Be Dicovered *********************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pDisappointedInline("Not Registering Route:"), pMethod(method), pattern, pDisappointedInline("Route Could Not Be Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pDisappointedInline("Service Could Not Have Been Located At:"), address)
-	} else {
-		log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
-		addresses := []string{address}
-		handler := PatternHandler{Pattern: pattern, Addresses: addresses}
-		mux.routes[method] = append(handlers, &handler)
+	log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
+	addresses := []string{address}
+	handler := PatternHandler{Pattern: pattern, Addresses: addresses}
+	mux.routes[method] = append(handlers, &handler)
+}
+
+func handleDuplicates(handler *PatternHandler, method string, pattern string, address string, service string, c client.KeysAPI) {
+	for _, existingAddress := range handler.Addresses {
+		if strings.Compare(address, existingAddress) == 0 {
+			return
+		}
 	}
+	// If address doesnt exist for pattern append to handler
+	handler.addresses = append(handler.addresses, address)
+	return
 }
 
 // Remove unregisters the address of a backend service as a handler for an
@@ -82,9 +84,6 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
 	if !present {
-		log.Println("*********************** FAILING Unregisterring Service Host ***********************")
-		log.Printf("\n>\t%v %v %v\n", pDisappointedInline(" FAILING Unregistering Route:"), pMethod(method), pattern)
-		log.Printf("\n>\t%v %v\n", pDisappointedInline("FAILING Service No Longer Located At:"), address)
 		log.Printf("\n>\tFAILING Pattern To Be Deleted: %v \n", pattern)
 		return
 	}
@@ -118,40 +117,6 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 			log.Printf("\n>\tPATTERN: %v does not match %v", pattern, handler.Pattern)
 		}
 	}
-}
-
-func handleDuplicates(handler PatternHandler, method string, pattern string, address string, service string, c client.KeysAPI) {
-	conflictKey := "/gateway/conflicts/" + service + "/" + os.Getenv("VINE_ENV") + "/" + pattern
-	var conf conflict
-	conf.ExistingAddresses = handler.Addresses
-	conf.AttemptedConflict = address
-	a, err := json.Marshal(conf)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	opts := EtcdSetOptions()
-	conflictValues := string(a)
-	c.Set(context.Background(), conflictKey, conflictValues, opts)
-	for _, existingAddress := range handler.Addresses {
-		if strings.Compare(address, existingAddress) == 0 {
-			duplicateKey := "/gateway/conflicts/duplicates/" + service + "/" + os.Getenv("VINE_ENV") + "/" + pattern
-			c.Set(context.Background(), duplicateKey, address, opts)
-			return
-		} else {
-			log.Printf("\n>\t%v!=%v", address, existingAddress)
-		}
-	}
-	//log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
-	// Add a new address to an existing pattern handler.
-	// If it is not ""
-	if address != "" {
-		handler.Addresses = append(handler.Addresses, address)
-	} else {
-		log.Printf("\n>\t%v\n>\tAddress: %v", pDisappointedInline("Tried to register \"\" as a valid host please avoid if at all possible"), address)
-		log.Printf("\n>********************** New Service Could Not Be Dicovered *********************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pDisappointedInline("Not Registering Route:"), pMethod(method), pattern, pDisappointedInline("Route Could Not Be Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pDisappointedInline("Service Could Not Have Been Located At:"), address)
-	}
-	return
 }
 
 // ServeHTTP dispatches the request to the backend service whose pattern most

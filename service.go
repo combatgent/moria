@@ -11,6 +11,7 @@ type Routes map[string][]string
 // exchanges.
 type ServiceRecord struct {
 	ID      string `json:"id"`
+	Name    string `json:"name,omitempty"`
 	Address string `json:"address"`
 	Routes  Routes `json:"routes"`
 }
