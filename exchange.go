@@ -176,6 +176,25 @@ func (exchange *Exchange) Watch() {
 				go func(exchange *Exchange, response *client.Response) { unregisterNode(exchange, response.PrevNode) }(exchange, response)
 			}
 		}
+		go func(exchange *Exchange) {
+			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
+				if arr, ok := exchange.mux.routes[method]; ok {
+					// for _, handler := range arr {
+					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
+					// }
+					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
+				}
+			}
+			address, key := gatewayNamespace()
+			opts := gatewaySetOpts()
+			resp, err := exchange.client.Set(context.Background(), key, address, opts)
+			if err != nil {
+				log.Println("ERROR: ", err)
+			} else {
+				log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
+			}
+
+		}(exchange)
 	}
 }
 
@@ -235,7 +254,7 @@ func gatewaySetOpts() *client.SetOptions {
 }
 
 func (exchange *Exchange) PublishLocation() {
-	go func() {
+	go func(exchange *Exchange) {
 		for {
 			time.Sleep(time.Second * 30)
 			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
@@ -255,7 +274,7 @@ func (exchange *Exchange) PublishLocation() {
 				log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
 			}
 		}
-	}()
+	}(exchange)
 }
 
 func unregisterNodes(exchange *Exchange, node *client.Node) {
