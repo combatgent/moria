@@ -244,7 +244,7 @@ func (exchange *Exchange) PublishLocation() {
 					// for _, handler := range arr {
 					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
 					// }
-					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED PATTERNS: %v\n", len(arr))
+					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
 				}
 			}
 			resp, err := exchange.client.Set(context.Background(), key, address, opts)
