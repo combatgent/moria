@@ -79,7 +79,7 @@ func (exchange *Exchange) Init() error {
 	}
 
 	// We want to watch changes *after* this one.
-	exchange.waitIndex = response.Index + 1
+	exchange.waitIndex = services.Index + 1
 
 	return nil
 }
@@ -199,7 +199,7 @@ func (exchange *Exchange) Watch() {
 					var serviceMachines []*Machine
 					for _, config := range environ.Nodes {
 						if strings.Compare(config.Key, "routes") == 0 {
-							serviceRecord = exchange.load(config.Value)
+							serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
 						} else if strings.Compare(config.Key, "hosts") == 0 {
 							for _, host := range config.Nodes {
 								if strings.Compare(host.Value, "") != 0 {
@@ -211,7 +211,7 @@ func (exchange *Exchange) Watch() {
 					for _, machine := range serviceMachines {
 						serviceRecord.ID = machine.ID
 						serviceRecord.Address = machine.IP
-						serviceRecord.Name = Name(service.Key)
+						serviceRecord.Name = Name(response.Node.Key)
 						exchange.Register(serviceRecord)
 					}
 				}
@@ -229,7 +229,6 @@ func (exchange *Exchange) Watch() {
 					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
 					CheckEtcdErrors(err)
 					environ := resp.Node
-					var serviceRecord *ServiceRecord
 					var serviceMachines []*Machine
 					for _, config := range environ.Nodes {
 						if strings.Compare(config.Key, "hosts") == 0 {
@@ -415,7 +414,7 @@ func (exchange *Exchange) load(js, name string) *ServiceRecord {
 	var s ServiceRecord
 	json.Unmarshal(bytes.NewBufferString(js).Bytes(), &routes)
 	s.GenerateRecord(routes)
-	exchange.serviceNameRoutes[name] = routes
+	exchange.serviceNameRoutes[name] = js
 	return &s
 }
 

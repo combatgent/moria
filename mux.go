@@ -72,7 +72,7 @@ func handleDuplicates(handler *PatternHandler, method string, pattern string, ad
 		}
 	}
 	// If address doesnt exist for pattern append to handler
-	handler.addresses = append(handler.addresses, address)
+	handler.Addresses = append(handler.Addresses, address)
 	return
 }
 
