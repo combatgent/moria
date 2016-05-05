@@ -337,12 +337,11 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 	exchange.services[service.ID] = service
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
-			go func(exchange *Exchange, method string, pattern string, service *ServiceRecord) {
-				pattern = "/api" + pattern
-				if service.Address != "" {
-					exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
-				}
-			}(exchange, method, pattern, service)
+			pattern = "/api" + pattern
+			if strings.Compare(service.Address, "") != 0 {
+				log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
+				exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
+			}
 		}
 	}
 }
