@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/client"
-	"github.com/fatih/color"
 	"golang.org/x/net/context"
 )
 
@@ -120,85 +119,55 @@ func (exchange *Exchange) Watch() {
 	ns := Namespace()
 	opts := EtcdWatcherOptions(exchange.waitIndex)
 	watcher := exchange.client.Watcher(ns, opts)
-	receiver := make(chan *client.Response)
-	defer close(receiver)
+	// receiver := make(chan *client.Response)
+	// defer close(receiver)
+	//
+	// go func() {
+	// 	for {
+	// 		r, err := watcher.Next(context.Background())
+	// 		if err != nil {
+	// 			color.Set(color.FgRed)
+	// 			log.Println(err)
+	// 			color.Unset()
+	// 		}
+	// 		receiver <- r
+	// 	}
+	// }()
 
-	go func() {
-		for {
-			r, err := watcher.Next(context.Background())
-			if err != nil {
-				color.Set(color.FgRed)
-				log.Println(err)
-				color.Unset()
-			}
-			receiver <- r
+	for true {
+		response, err := watcher.Next(context.TODO())
+		log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
+		if err != nil {
+			log.Printf("\n>RECEIVED ERROR RESPONDING TO:%v\n>\tFOR KEY:%v\n>\tERROR: %+v", response.Action, response.PrevNode.Key, err)
+			return
 		}
-	}()
 
-	for {
-		select {
-		case response := <-receiver:
-			log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
-			if strings.Compare(response.Action, "set") == 0 {
-				if MatchHostsEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
-					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
-					if err != nil {
-						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
-					} else {
-						registerNode(exchange, resp.Node)
-					}
-				} else if MatchEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
-					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
-					if err != nil {
-						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
-					} else {
-						registerNode(exchange, resp.Node)
-					}
+		switch response.Action {
+		case "set", "update", "create", "compareAndSwap":
+			if MatchHostsEnv(response.Node.Key) {
+				log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
+				resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
+				if err != nil {
+					log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
+				} else {
+					registerNode(exchange, resp.Node)
 				}
-			} else if strings.Compare(response.Action, "delete") == 0 {
-				if MatchHostsEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
-					unregisterNode(exchange, response.PrevNode)
-				} else if MatchEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tDeleting Routes\n********************************************************************************")
-					unregisterNode(exchange, response.PrevNode)
+			} else if MatchEnv(response.Node.Key) {
+				log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
+				resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
+				if err != nil {
+					log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
+				} else {
+					registerNode(exchange, resp.Node)
 				}
-			} else if strings.Compare(response.Action, "expire") == 0 {
-				if MatchHostsEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tExpiring Routes\n********************************************************************************")
-					unregisterNode(exchange, response.PrevNode)
-				} else if MatchEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tExpiringing Hosts\n********************************************************************************")
-					unregisterNode(exchange, response.PrevNode)
-				}
-			} else if strings.Compare(response.Action, "update") == 0 {
-				if MatchHostsEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tUpdating Hosts\n********************************************************************************")
-					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
-					if err != nil {
-						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
-					} else {
-						registerNode(exchange, resp.Node)
-					}
-				} else if MatchEnv(response.Node.Key) {
-					log.Println("\n\t\t\t\tUpdating Routes\n********************************************************************************")
-					resp, err := exchange.client.Get(context.TODO(), getRootNode(response.PrevNode.Key), EtcdGetOptions())
-					if err != nil {
-						log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
-					} else {
-						registerNode(exchange, resp.Node)
-					}
-				}
-			} else {
-				if MatchHostsEnv(response.Node.Key) {
-					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: %v", response.Action)
-					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE HOST: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE HOST: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
-				} else if MatchEnv(response.Node.Key) {
-					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: %v", response.Action)
-					log.Printf("\n>\tIMPORTANT UNCAUGHT RESPONSE ROUTES: {%v:<%v>}\n>\tUNCAUGHT RESPONSE PREV VALUE ROUTES: {%v:<%v>}", response.Node.Key, response.Node.Value, response.PrevNode.Key, response.PrevNode.Value)
-				}
+			}
+		case "delete", "expire", "compareAndDelete":
+			if MatchHostsEnv(response.Node.Key) {
+				log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
+				unregisterNode(exchange, response.PrevNode)
+			} else if MatchEnv(response.Node.Key) {
+				log.Println("\n\t\t\t\tDeleting Routes\n********************************************************************************")
+				unregisterNode(exchange, response.PrevNode)
 			}
 		}
 	}
