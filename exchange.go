@@ -250,7 +250,6 @@ func (exchange *Exchange) Watch() {
 					if service, ok := exchange.services[Tail(response.Node.Key)]; ok {
 						exchange.Unregister(service)
 					}
-					for k, v := range {}
 				}
 			}
 		}
