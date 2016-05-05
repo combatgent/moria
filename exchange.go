@@ -192,7 +192,7 @@ func (exchange *Exchange) Watch() {
 						resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
 						CheckEtcdErrors(err)
 						environ := resp.Node
-						var serviceRecord *ServiceRecord
+						serviceRecord := &ServiceRecord{}
 						var serviceMachines []*Machine
 						for _, config := range environ.Nodes {
 							if strings.Compare(Tail(config.Key), "routes") == 0 {
