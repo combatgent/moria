@@ -121,6 +121,8 @@ func (exchange *Exchange) Watch() {
 	opts := EtcdWatcherOptions(exchange.waitIndex)
 	watcher := exchange.client.Watcher(ns, opts)
 	receiver := make(chan *client.Response)
+	defer close(receiver)
+
 	go func() {
 		for {
 			r, err := watcher.Next(context.Background())
@@ -132,13 +134,7 @@ func (exchange *Exchange) Watch() {
 			receiver <- r
 		}
 	}()
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("\n\n\n\n\n\n\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\t%+v", err)
-			close(receiver)
-			exchange.Watch()
-		}
-	}()
+
 	for {
 		select {
 		case response := <-receiver:
@@ -234,8 +230,7 @@ func gatewaySetOpts() *client.SetOptions {
 }
 
 func (exchange *Exchange) PublishLocation() {
-
-	go func(exchange *Exchange) {
+	go func() {
 		for {
 			time.Sleep(time.Second * 30)
 			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
@@ -255,7 +250,7 @@ func (exchange *Exchange) PublishLocation() {
 				log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
 			}
 		}
-	}(exchange)
+	}()
 }
 
 func unregisterNodes(exchange *Exchange, node *client.Node) {

@@ -21,9 +21,17 @@ func Configure(e string) *Exchange {
 	namespace := Namespace()
 	exchange := NewExchange(namespace, etcd, mux)
 	exchange.Init()
+
 	// Watch for service changes in etcd.  The exchange updates service
 	// routing rules based on configuration changes in etcd.
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("\n\n\n\n\n\n\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\t%+v", err)
+				close(receiver)
+				exchange.Watch()
+			}
+		}()
 		log.Print("Watching for service configuration changes in etcd")
 		exchange.Watch()
 
