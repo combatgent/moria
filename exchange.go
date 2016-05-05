@@ -254,14 +254,14 @@ func (exchange *Exchange) Watch() {
 			}
 		}
 		go func(exchange *Exchange) {
-			// for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
-			// 	if arr, ok := exchange.mux.routes[method]; ok {
-			// 		// for _, handler := range arr {
-			// 		// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
-			// 		// }
-			// 		log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
-			// 	}
-			// }
+			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
+				if arr, ok := exchange.mux.routes[method]; ok {
+					// for _, handler := range arr {
+					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
+					// }
+					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
+				}
+			}
 			address, key := gatewayNamespace()
 			opts := gatewaySetOpts()
 			_, err := exchange.client.Set(context.Background(), key, address, opts)
@@ -349,7 +349,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
 			pattern = "/api" + pattern
-			log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
+			// log.Printf("\n>\tADDING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
 			exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
 		}
 	}
@@ -359,7 +359,7 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 func (exchange *Exchange) Unregister(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
-			log.Printf("\n>\nREMOVING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
+			// log.Printf("\n>\nREMOVING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
 			exchange.mux.Remove(method, pattern, service.Address, service.ID)
 		}
 	}
