@@ -179,9 +179,9 @@ func (exchange *Exchange) Watch() {
 		go func(exchange *Exchange) {
 			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
 				if arr, ok := exchange.mux.routes[method]; ok {
-					// for _, handler := range arr {
-					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
-					// }
+					for _, handler := range arr {
+						log.Printf("\n>\tHANDLER: %+v\n", handler)
+					}
 					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
 				}
 			}
