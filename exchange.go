@@ -52,10 +52,7 @@ func (exchange *Exchange) Init() error {
 		CheckEtcdErrors(err)
 	}
 	if response.Node.Nodes.Len() > 0 {
-		go func(exchange *Exchange, node *client.Node) {
-			registerNodes(exchange, node)
-		}(exchange, response.Node)
-
+		registerNodes(exchange, response.Node)
 	}
 	// We want to watch changes *after* this one.
 	exchange.waitIndex = response.Index + 1
@@ -65,7 +62,7 @@ func (exchange *Exchange) Init() error {
 
 func registerNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		go func(exchange *Exchange, n *client.Node) { registerNode(exchange, n) }(exchange, n)
+		registerNode(exchange, n)
 	}
 }
 
@@ -106,9 +103,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 		}
 	}
 	if n.Nodes.Len() > 0 {
-		go func(exchange *Exchange, node *client.Node) {
-			registerNodes(exchange, n)
-		}(exchange, n)
+		registerNodes(exchange, n)
 	}
 }
 
