@@ -178,41 +178,41 @@ func (exchange *Exchange) Watch() {
 						serviceRecord.Name = Name(response.Node.Key)
 						exchange.Register(serviceRecord)
 					}
-				}
-			} else if strings.Compare("hosts", TailMinusOne(response.Node.Key)) == 0 {
-				log.Printf("\n>\tWatcher Matched Hosts-: %v", response.Node.Key)
-				name := Name(response.Node.Key)
-				if serviceRoutes, ok := exchange.serviceNameRoutes[name]; ok {
-					log.Printf("\n>\tWatcher Loaded Routes From Hash-: %v", response.Node.Key)
-					serviceRecord := exchange.load(serviceRoutes, name)
-					serviceRecord.ID = Tail(response.Node.Key)
-					serviceRecord.Address = response.Node.Value
-					serviceRecord.Name = name
-					exchange.Register(serviceRecord)
-				} else {
-					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
-					CheckEtcdErrors(err)
-					environ := resp.Node
-					var serviceRecord *ServiceRecord
-					var serviceMachines []*Machine
-					for _, config := range environ.Nodes {
-						if strings.Compare(Tail(config.Key), "routes") == 0 {
-							log.Printf("\n>\tWatcher Loaded Routes From Etcd-: %v", response.Node.Key)
-							serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
-						} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
-							log.Printf("\n>\tMatched Hosts: %v", config.Key)
-							for _, host := range config.Nodes {
-								if strings.Compare(host.Value, "") != 0 {
-									serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
+				} else if strings.Compare("hosts", TailMinusOne(response.Node.Key)) == 0 {
+					log.Printf("\n>\tWatcher Matched Hosts-: %v", response.Node.Key)
+					name := Name(response.Node.Key)
+					if serviceRoutes, ok := exchange.serviceNameRoutes[name]; ok {
+						log.Printf("\n>\tWatcher Loaded Routes From Hash-: %v", response.Node.Key)
+						serviceRecord := exchange.load(serviceRoutes, name)
+						serviceRecord.ID = Tail(response.Node.Key)
+						serviceRecord.Address = response.Node.Value
+						serviceRecord.Name = name
+						exchange.Register(serviceRecord)
+					} else {
+						resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
+						CheckEtcdErrors(err)
+						environ := resp.Node
+						var serviceRecord *ServiceRecord
+						var serviceMachines []*Machine
+						for _, config := range environ.Nodes {
+							if strings.Compare(Tail(config.Key), "routes") == 0 {
+								log.Printf("\n>\tWatcher Loaded Routes From Etcd-: %v", response.Node.Key)
+								serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
+							} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
+								log.Printf("\n>\tMatched Hosts: %v", config.Key)
+								for _, host := range config.Nodes {
+									if strings.Compare(host.Value, "") != 0 {
+										serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
+									}
 								}
 							}
 						}
-					}
-					for _, machine := range serviceMachines {
-						serviceRecord.ID = machine.ID
-						serviceRecord.Address = machine.IP
-						serviceRecord.Name = Name(response.Node.Key)
-						exchange.Register(serviceRecord)
+						for _, machine := range serviceMachines {
+							serviceRecord.ID = machine.ID
+							serviceRecord.Address = machine.IP
+							serviceRecord.Name = Name(response.Node.Key)
+							exchange.Register(serviceRecord)
+						}
 					}
 				}
 			}
