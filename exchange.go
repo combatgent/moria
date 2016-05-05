@@ -77,16 +77,12 @@ func registerNode(exchange *Exchange, n *client.Node) {
 				}
 			}
 		}()
+
 		service := exchange.load(n.Value)
 		service.ID = ID(n.Key)
-		host := Host(n.Key)
-		log.Printf("HOST>>>: %v", host)
-		resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
-		CheckEtcdErrors(err)
-		for _, rn := range resp.Node.Nodes {
-			service.Address = rn.Value
-			exchange.Register(service)
-		}
+		service.Address = n.Value
+		log.Printf("\n>\tSERVICE DETAILS:\n>\t%+v", service)
+		exchange.Register(service)
 	} else if MatchHostsEnv(n.Key) {
 		defer func() {
 			if perr := recover(); perr != nil {
