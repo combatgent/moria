@@ -82,8 +82,13 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
 	if !present {
+		log.Println("*********************** FAILING Unregisterring Service Host ***********************")
+		log.Printf("\n>\t%v %v %v\n", pDisappointedInline(" FAILING Unregistering Route:"), pMethod(method), pattern)
+		log.Printf("\n>\t%v %v\n", pDisappointedInline("FAILING Service No Longer Located At:"), address)
+		log.Printf("\n>\tFAILING Pattern To Be Deleted: %v \n", pattern)
 		return
 	}
+
 	// Find the handler registered for the pattern.
 	for i, handler := range handlers {
 		if strings.Compare(pattern, handler.Pattern) == 0 {
