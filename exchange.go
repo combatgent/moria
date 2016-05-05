@@ -258,7 +258,7 @@ func (exchange *Exchange) Watch() {
 			}
 			address, key := gatewayNamespace()
 			opts := gatewaySetOpts()
-			resp, err := exchange.client.Set(context.Background(), key, address, opts)
+			_, err := exchange.client.Set(context.Background(), key, address, opts)
 			if err != nil {
 				log.Println("ERROR: ", err)
 			} else {
