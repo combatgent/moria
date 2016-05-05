@@ -103,6 +103,9 @@ func registerNode(exchange *Exchange, n *client.Node) {
 			exchange.Register(service)
 		}
 	}
+	if n.Nodes.Len() > 0 {
+		registerNodes(exchange, n)
+	}
 }
 
 // Watch observes changes in etcd and registers and unregisters services, as
