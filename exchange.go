@@ -217,11 +217,11 @@ func (exchange *Exchange) Watch() {
 				}
 			}
 		case "delete", "expire", "compareAndDelete":
-			if EnvMatch(response.Node.Key) {
-				log.Printf("\n>\tWatcher Matched Environment@: %v", response.Node.Key)
-				if strings.Compare("routes", Tail(response.Node.Key)) == 0 {
-					log.Printf("\n>\tWatcher Matched Routes@: %v", response.Node.Key)
-					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
+			if EnvMatch(response.PrevNode.Key) {
+				log.Printf("\n>\tWatcher Matched Environment@: %v", response.PrevNode.Key)
+				if strings.Compare("routes", Tail(response.PrevNode.Key)) == 0 {
+					log.Printf("\n>\tWatcher Matched Routes@: %v", response.PrevNode.Key)
+					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.PrevNode.Key), EtcdGetOptions())
 					CheckEtcdErrors(err)
 					environ := resp.Node
 					var serviceMachines []*Machine
@@ -246,8 +246,8 @@ func (exchange *Exchange) Watch() {
 						}
 					}
 				} else if strings.Compare("hosts", TailMinusOne(response.Node.Key)) == 0 {
-					log.Printf("\n>\tWatcher Matched Hosts@: %v\n>\tChecking Map With:%v", response.Node.Key, Tail(response.Node.Key))
-					if service, ok := exchange.services[Tail(response.Node.Key)]; ok {
+					log.Printf("\n>\tWatcher Matched Hosts@: %v\n>\tChecking Map With:%v", response.PrevNode.Key, Tail(response.PrevNode.Key))
+					if service, ok := exchange.services[Tail(response.PrevNode.Key)]; ok {
 						exchange.Unregister(service)
 					}
 				}
@@ -256,9 +256,9 @@ func (exchange *Exchange) Watch() {
 		go func(exchange *Exchange) {
 			for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
 				if arr, ok := exchange.mux.routes[method]; ok {
-					for _, handler := range arr {
-						log.Printf("\n>\tHANDLER: %+v\n", handler)
-					}
+					// for _, handler := range arr {
+					// 	log.Printf("\n>\tHANDLER: %+v\n", handler)
+					// }
 					log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
 				}
 			}
@@ -275,9 +275,9 @@ func (exchange *Exchange) Watch() {
 	}
 }
 
-func getEnvironmentKey(s string) {
-
-}
+// func getEnvironmentKey(s string) {
+//
+// }
 
 // func getRootNode(key string) string {
 //
