@@ -156,7 +156,7 @@ func (exchange *Exchange) Watch() {
 				if err != nil {
 					log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
 				} else {
-					registerNode(exchange, resp.Node)
+					go func(exchange *Exchange, resp *client.Response) { registerNode(exchange, resp.Node) }(exchange, resp)
 				}
 			} else if MatchEnv(response.Node.Key) {
 				log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
@@ -164,16 +164,16 @@ func (exchange *Exchange) Watch() {
 				if err != nil {
 					log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
 				} else {
-					registerNode(exchange, resp.Node)
+					go func(exchange *Exchange, resp *client.Response) { registerNode(exchange, resp.Node) }(exchange, resp)
 				}
 			}
 		case "delete", "expire", "compareAndDelete":
 			if MatchHostsEnv(response.PrevNode.Key) {
 				log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
-				unregisterNode(exchange, response.PrevNode)
+				go func(exchange *Exchange, response *client.Response) { unregisterNode(exchange, response.PrevNode) }(exchange, response)
 			} else if MatchEnv(response.PrevNode.Key) {
 				log.Println("\n\t\t\t\tDeleting Routes\n********************************************************************************")
-				unregisterNode(exchange, response.PrevNode)
+				go func(exchange *Exchange, response *client.Response) { unregisterNode(exchange, response.PrevNode) }(exchange, response)
 			}
 		}
 	}
