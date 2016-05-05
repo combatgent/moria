@@ -80,7 +80,7 @@ func registerNode(exchange *Exchange, n *client.Node) {
 		service := exchange.load(n.Value)
 		service.ID = ID(n.Key)
 		host := Host(n.Key)
-		log.Printf("HOST: %v", host)
+		log.Printf("HOST>>>: %v", host)
 		resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
 		CheckEtcdErrors(err)
 		for _, rn := range resp.Node.Nodes {
