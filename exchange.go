@@ -339,7 +339,9 @@ func (exchange *Exchange) Register(service *ServiceRecord) {
 		for _, pattern := range patterns {
 			go func(exchange *Exchange, method string, pattern string, service *ServiceRecord) {
 				pattern = "/api" + pattern
-				exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
+				if service.Address != "" {
+					exchange.mux.Add(method, pattern, service.Address, service.ID, exchange.client)
+				}
 			}(exchange, method, pattern, service)
 		}
 	}
