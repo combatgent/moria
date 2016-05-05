@@ -327,7 +327,9 @@ func (exchange *Exchange) Unregister(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
 			log.Printf("\n>\nREMOVING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
-			exchange.mux.Remove(method, pattern, service.Address, service.ID)
+			go func(exchange *Exchange, method string, pattern string, service *ServiceRecord) {
+				exchange.mux.Remove(method, pattern, service.Address, service.ID)
+			}(exchange, method, pattern, service)
 		}
 	}
 }
