@@ -67,7 +67,7 @@ func (exchange *Exchange) Init() error {
 						log.Printf("\n>\tInit Matched Hosts: %v", config.Key)
 						for _, host := range config.Nodes {
 							if strings.Compare(host.Value, "") != 0 {
-								serviceMachines = append(serviceMachines, &Machine{host.Key, host.Value})
+								serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
 							}
 						}
 					}
@@ -250,6 +250,7 @@ func (exchange *Exchange) Watch() {
 					if service, ok := exchange.services[Tail(response.Node.Key)]; ok {
 						exchange.Unregister(service)
 					}
+					for k, v := range {}
 				}
 			}
 		}
