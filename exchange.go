@@ -28,10 +28,11 @@ type Exchange struct {
 // given etcd directory.
 func NewExchange(namespace string, client client.KeysAPI, mux *Mux) *Exchange {
 	return &Exchange{
-		namespace: namespace,
-		client:    client,
-		mux:       mux,
-		services:  make(map[string]*ServiceRecord)}
+		namespace:         namespace,
+		client:            client,
+		mux:               mux,
+		services:          make(map[string]*ServiceRecord),
+		serviceNameRoutes: make(map[string]string)}
 }
 
 // Init fetches service information from etcd and initializes the exchange.
