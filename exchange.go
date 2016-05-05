@@ -140,11 +140,21 @@ func (exchange *Exchange) Watch() {
 		case response := <-receiver:
 			log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
 			if strings.Compare(response.Action, "set") == 0 {
-				log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
-				registerNode(exchange, response.Node)
+				if MatchHostsEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
+					registerNode(exchange, response.Node)
+				} else if MatchEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
+					registerNode(exchange, response.Node)
+				}
 			} else if strings.Compare(response.Action, "delete") == 0 {
-				log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
-				unregisterNode(exchange, response.PrevNode)
+				if MatchHostsEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
+					unregisterNode(exchange, response.PrevNode)
+				} else if MatchEnv(response.Node.Key) {
+					log.Println("\n\t\t\t\tDeleting Routes\n********************************************************************************")
+					unregisterNode(exchange, response.PrevNode)
+				}
 			} else if strings.Compare(response.Action, "expire") == 0 {
 				if MatchHostsEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tExpiring Routes\n********************************************************************************")
