@@ -114,6 +114,8 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 					return
 				}
 			}
+		} else {
+			log.Printf("\n>\tPATTERN: %v does not match %v", pattern, handler.Pattern)
 		}
 	}
 }

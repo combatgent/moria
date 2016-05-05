@@ -170,10 +170,10 @@ func (exchange *Exchange) Watch() {
 		case "delete", "expire", "compareAndDelete":
 			if MatchHostsEnv(response.PrevNode.Key) {
 				log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
-				go func(exchange *Exchange, response *client.Response) { unregisterNode(exchange, response.PrevNode) }(exchange, response)
+				unregisterNode(exchange, response.PrevNode)
 			} else if MatchEnv(response.PrevNode.Key) {
 				log.Println("\n\t\t\t\tDeleting Routes\n********************************************************************************")
-				go func(exchange *Exchange, response *client.Response) { unregisterNode(exchange, response.PrevNode) }(exchange, response)
+				unregisterNode(exchange, response.PrevNode)
 			}
 		}
 		go func(exchange *Exchange) {
@@ -279,7 +279,7 @@ func (exchange *Exchange) PublishLocation() {
 
 func unregisterNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		go func(exchange *Exchange, n *client.Node) { unregisterNode(exchange, n) }(exchange, n)
+		unregisterNode(exchange, n)
 	}
 }
 
@@ -350,9 +350,7 @@ func (exchange *Exchange) Unregister(service *ServiceRecord) {
 	for method, patterns := range service.Routes {
 		for _, pattern := range patterns {
 			log.Printf("\n>\nREMOVING PATTERN\n>\tPATTERN DETAILS: %v %v\n>\tSERVICE DETAILS: %v %v", method, pattern, service.Address, service.ID)
-			go func(exchange *Exchange, method string, pattern string, service *ServiceRecord) {
-				exchange.mux.Remove(method, pattern, service.Address, service.ID)
-			}(exchange, method, pattern, service)
+			exchange.mux.Remove(method, pattern, service.Address, service.ID)
 		}
 	}
 }
