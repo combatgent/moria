@@ -166,6 +166,7 @@ func Host(k string) string {
 			}
 		}
 	}
+	host = strings.TrimSuffix(host, "/")
 	return host
 }
 

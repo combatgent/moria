@@ -103,9 +103,6 @@ func registerNode(exchange *Exchange, n *client.Node) {
 			exchange.Register(service)
 		}
 	}
-	if n.Nodes.Len() > 0 {
-		registerNodes(exchange, n)
-	}
 }
 
 // Watch observes changes in etcd and registers and unregisters services, as
@@ -152,7 +149,7 @@ func (exchange *Exchange) Watch() {
 				if err != nil {
 					log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
 				} else {
-					go func(exchange *Exchange, resp *client.Response) { registerNode(exchange, resp.Node) }(exchange, resp)
+					registerNode(exchange, resp.Node)
 				}
 			} else if MatchEnv(response.Node.Key) {
 				log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
@@ -160,7 +157,7 @@ func (exchange *Exchange) Watch() {
 				if err != nil {
 					log.Printf("\n>\tUNABLE TO HANDLE: %v", response.Action)
 				} else {
-					go func(exchange *Exchange, resp *client.Response) { registerNode(exchange, resp.Node) }(exchange, resp)
+					registerNode(exchange, resp.Node)
 				}
 			}
 		case "delete", "expire", "compareAndDelete":
