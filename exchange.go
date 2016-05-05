@@ -121,7 +121,7 @@ func (exchange *Exchange) Watch() {
 	opts := EtcdWatcherOptions(exchange.waitIndex)
 	watcher := exchange.client.Watcher(ns, opts)
 	receiver := make(chan *client.Response)
-	go func(receiver chan *client.Response) {
+	go func() {
 		for {
 			r, err := watcher.Next(context.Background())
 			if err != nil {
@@ -131,7 +131,7 @@ func (exchange *Exchange) Watch() {
 			}
 			receiver <- r
 		}
-	}(receiver)
+	}()
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("\n\n\n\n\n\n\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\tMAJOR LIFE THREATENING ERROR\n>\t%+v", err)
@@ -140,34 +140,20 @@ func (exchange *Exchange) Watch() {
 		}
 	}()
 	for {
-		options := EtcdGetOptions()
-		ctx := context.TODO()
 		select {
 		case response := <-receiver:
 			log.Printf("\n>\tRESPONDING TO:%v\n>\tFOR KEY:%v\n", response.Action, response.PrevNode.Key)
 			if strings.Compare(response.Action, "set") == 0 {
-				splitKeys := strings.Split(response.Node.Key, "/")
-				if splitKeys[len(splitKeys)-1] == "routes" {
-					log.Println("\n\t\t\t\tSetting Routes\n********************************************************************************")
-					getRootNode(response.Node.Key)
-					resp, _ := exchange.client.Get(ctx, getRootNode(response.Node.Key), options)
-					registerNode(exchange, resp.Node)
-				} else {
-					log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
-					go func(exchange *Exchange, node *client.Node) {
-						registerNode(exchange, node)
-					}(exchange, response.Node)
-				}
+				log.Println("\n\t\t\t\tSetting Hosts\n********************************************************************************")
+				registerNode(exchange, response.Node)
 			} else if strings.Compare(response.Action, "delete") == 0 {
-				go func(exchange *Exchange, prevNode *client.Node) {
-					log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
-					unregisterNode(exchange, prevNode)
-				}(exchange, response.PrevNode)
+				log.Println("\n\t\t\t\tDeleting Hosts\n********************************************************************************")
+				unregisterNode(exchange, response.PrevNode)
 			} else if strings.Compare(response.Action, "expire") == 0 {
-				if MatchEnv(response.Node.Key) {
+				if MatchHostsEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tExpiring Routes\n********************************************************************************")
 					unregisterNode(exchange, response.PrevNode)
-				} else if MatchHostsEnv(response.Node.Key) {
+				} else if MatchEnv(response.Node.Key) {
 					log.Println("\n\t\t\t\tExpiringing Hosts\n********************************************************************************")
 					unregisterNode(exchange, response.PrevNode)
 				}
