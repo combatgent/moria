@@ -65,7 +65,7 @@ func (exchange *Exchange) Init() error {
 
 func registerNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		registerNode(exchange, n)
+		go func(exchange *Exchange, n *client.Node) { registerNode(exchange, n) }(exchange, n)
 	}
 }
 
@@ -260,7 +260,7 @@ func (exchange *Exchange) PublishLocation() {
 
 func unregisterNodes(exchange *Exchange, node *client.Node) {
 	for _, n := range node.Nodes {
-		unregisterNode(exchange, n)
+		go func(exchange *Exchange, n *client.Node) { unregisterNode(exchange, n) }(exchange, n)
 	}
 }
 
@@ -296,8 +296,10 @@ func unregisterNode(exchange *Exchange, n *client.Node) {
 			resp, err := exchange.client.Get(context.Background(), host, EtcdGetDirectOptions())
 			CheckEtcdErrors(err)
 			for _, respNode := range resp.Node.Nodes {
-				service.Address = respNode.Value
-				exchange.Unregister(service)
+				go func(exchange *Exchange, respNode *client.Node, service *ServiceRecord) {
+					service.Address = respNode.Value
+					exchange.Unregister(service)
+				}(exchange, respNode, service)
 			}
 		}
 	}
