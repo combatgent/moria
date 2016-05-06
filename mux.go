@@ -150,6 +150,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Relay the response from the backend service back to the client.
 	for header, values := range response.Header {
 		for _, value := range values {
+			log.Printf("\n>\tHEADER: %v\n>\tVALUE: %v", header, value)
 			writer.Header().Add(header, value)
 		}
 	}
@@ -212,7 +213,6 @@ func (mux *Mux) Match(method, pattern string) (*[]string, error) {
 	if present {
 		for _, handler := range handlers {
 			if handler.Match(pattern) {
-				log.Println("Found MatchingPattern", pattern)
 				return &handler.Addresses, nil
 			}
 		}
