@@ -146,7 +146,6 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte(jsonStr))
 		return
 	}
-
 	// Relay the response from the backend service back to the client.
 	for header, values := range response.Header {
 		for _, value := range values {
@@ -179,6 +178,7 @@ func generateInnerRequest(request *http.Request, address string) *http.Request {
 	innerRequest.URL.RawQuery = request.URL.RawQuery
 	innerRequest.RequestURI = ""
 	innerRequest.Header = make(http.Header)
+	innerRequest.Close = false
 	for header, values := range request.Header {
 		for _, value := range values {
 			innerRequest.Header.Add(header, value)
