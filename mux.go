@@ -122,6 +122,9 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 // ServeHTTP dispatches the request to the backend service whose pattern most
 // closely matches the request URL.
 func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	go func(request *http.Request) {
+		log.Printf("\n>\tSERVING REQUEST:%v %v", request.Method, request.URL.String())
+	}(request)
 	// Create address string
 	var address string
 	// Attempt to match the request against registered patterns and addresses.

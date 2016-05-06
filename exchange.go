@@ -264,11 +264,11 @@ func (exchange *Exchange) Watch() {
 			// }
 			address, key := gatewayNamespace()
 			opts := gatewaySetOpts()
-			resp, err := exchange.client.Set(context.Background(), key, address, opts)
+			_, err := exchange.client.Set(context.Background(), key, address, opts)
 			if err != nil {
 				log.Println("ERROR: ", err)
 			} else {
-				log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
+				//log.Printf("\n>\t%v \"%v\"\n>\t%v%v", pInfoInline("Success Gateway Alive At:"), pInfoInline(address), pInfoInline("Services May Locate This Gateway At The Key Provided Below\n>\tGATEWAY_KEY="), pInfoInline(resp.Node.Key))
 			}
 
 		}(exchange)
