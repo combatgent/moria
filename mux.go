@@ -340,11 +340,7 @@ func generateInnerRequest(request *http.Request, address string) *http.Request {
 	innerRequest.RequestURI = ""
 	innerRequest.Header = make(http.Header)
 	innerRequest.Close = false
-	for header, values := range request.Header {
-		for _, value := range values {
-			innerRequest.Header.Add(header, value)
-		}
-	}
+	CopyHeaders(innerRequest.Header, request.Header)
 	return innerRequest
 }
 
