@@ -310,11 +310,14 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 //CopyHeaders adds headers to a response
 func CopyHeaders(dst, src http.Header) {
+	log.Println("{{{{{{{{{{{{{{{{{{{{{{{{{{{_______________________________________________________________________}}}}}}}}}}}}}}}}}}}}}}}}}}}")
 	for k, vv := range src {
 		for _, v := range vv {
+			log.Println("\nHeader:", k, "\nValue:", v)
 			dst.Add(k, v)
 		}
 	}
+	log.Println("{{{{{{{{{{{{{{{{{{{{{{{{{{{_______________________________________________________________________}}}}}}}}}}}}}}}}}}}}}}}}}}}")
 }
 
 // CopyURL provides update safe copy by avoiding shallow copying User field
