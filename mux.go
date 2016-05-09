@@ -261,7 +261,6 @@ func NewMux() *Mux {
 func (mux *Mux) Add(method string, pattern string, address string, service string, c client.KeysAPI) {
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
-
 	handlers, present := mux.routes[method]
 	if !present {
 		handlers = make([]*PatternHandler, 0)
