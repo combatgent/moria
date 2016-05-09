@@ -2,11 +2,13 @@ package moria
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strconv"
@@ -329,7 +331,13 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 // ServeHTTP dispatches the request to the backend service whose pattern most
 // closely matches the request URL.
 func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	log.Printf("\n>\tRecieved Request: %v %v%v", request.Method, request.Host, request.URL.String())
+	dump, err := httputil.DumpRequest(request, true)
+	if err != nil {
+		http.Error(writer, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf(w, "Recieved: %q", dump)
 	start := time.Now().UTC()
 	// Create address string
 	var address string
@@ -404,6 +412,7 @@ func (mux *Mux) generateInnerRequest(request *http.Request, address string) *htt
 	innerRequest.URL = CopyURL(request.URL)
 	innerRequest.URL.Scheme = "http"
 	innerRequest.URL.Host = address
+	innerRequest.Host = address
 	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
 	innerRequest.URL.RawQuery = request.URL.RawQuery
 	innerRequest.RequestURI = ""
@@ -413,7 +422,11 @@ func (mux *Mux) generateInnerRequest(request *http.Request, address string) *htt
 	if mux.rewriter != nil {
 		mux.rewriter.Rewrite(innerRequest)
 	}
-	log.Printf("\n>\tExecuting Request: %v %v%v", innerRequest.Method, innerRequest.Host, innerRequest.URL.String())
+	dump, err := httputil.DumpRequestOut(innerRequest, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Executing: %q", dump)
 	return innerRequest
 }
 
