@@ -337,7 +337,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	log.Printf(w, "Recieved: %q", dump)
+	log.Printf("Recieved: %q", dump)
 	start := time.Now().UTC()
 	// Create address string
 	var address string
