@@ -140,6 +140,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	innerRequest := generateInnerRequest(request, address)
 	// Execute request
 	response, err := http.DefaultClient.Do(innerRequest)
+	defer response.Body.Close()
 	if err != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n%+v", err)
 		// TODO: Add JSON response here for UI
