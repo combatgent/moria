@@ -246,6 +246,13 @@ func NewMux() *Mux {
 		}
 		mux.rewriter = &HeaderRewriter{TrustForwardHeader: true, Hostname: h}
 	}
+
+	if mux.ctx.log == nil {
+		mux.ctx.log = NullLogger
+	}
+	if mux.ctx.errHandler == nil {
+		mux.ctx.errHandler = DefaultHandler
+	}
 	return mux
 }
 
@@ -353,7 +360,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	//response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
-		mux.ctx.log.Errorf("Error forwarding to %v, err: %v", request.URL, err)
+		log.Printf("Error forwarding to %v, err: %v", request.URL, err)
 		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
 	}
