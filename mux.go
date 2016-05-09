@@ -365,7 +365,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			request.TLS.CipherSuite,
 			request.TLS.ServerName)
 	} else {
-		mux.ctx.log.Infof("Round trip: %v, code: %v, duration: %v", request.URL, response.StatusCode, time.Now().UTC().Sub(start))
+		log.Printf("Round trip: %v, code: %v, duration: %v", request.URL, response.StatusCode, time.Now().UTC().Sub(start))
 	}
 	// Relay the response from the backend service back to the client.
 	CopyHeaders(writer.Header(), response.Header)
