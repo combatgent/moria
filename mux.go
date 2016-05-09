@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -160,6 +161,17 @@ const (
 	ERROR
 )
 
+var HopHeaders = []string{
+	Connection,
+	KeepAlive,
+	ProxyAuthenticate,
+	ProxyAuthorization,
+	Te, // canonicalized version of "TE"
+	Trailers,
+	TransferEncoding,
+	Upgrade,
+}
+
 //
 
 // Mux is an HTTP request multiplexer.  It matches the URL of
@@ -172,11 +184,67 @@ type Mux struct {
 	routes       map[string][]*PatternHandler // Patterns mapped to backend services.
 	roundTripper http.RoundTripper
 	ctx          handlerContext
+	rewriter     ReqRewriter
+}
+type ReqRewriter interface {
+	Rewrite(r *http.Request)
+}
+
+type HeaderRewriter struct {
+	TrustForwardHeader bool
+	Hostname           string
+}
+
+func (rw *HeaderRewriter) Rewrite(req *http.Request) {
+	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+		if rw.TrustForwardHeader {
+			if prior, ok := req.Header[XForwardedFor]; ok {
+				clientIP = strings.Join(prior, ", ") + ", " + clientIP
+			}
+		}
+		req.Header.Set(XForwardedFor, clientIP)
+	}
+
+	if xfp := req.Header.Get(XForwardedProto); xfp != "" && rw.TrustForwardHeader {
+		req.Header.Set(XForwardedProto, xfp)
+	} else if req.TLS != nil {
+		req.Header.Set(XForwardedProto, "https")
+	} else {
+		req.Header.Set(XForwardedProto, "http")
+	}
+
+	if xfh := req.Header.Get(XForwardedHost); xfh != "" && rw.TrustForwardHeader {
+		req.Header.Set(XForwardedHost, xfh)
+	} else if req.Host != "" {
+		req.Header.Set(XForwardedHost, req.Host)
+	}
+
+	if rw.Hostname != "" {
+		req.Header.Set(XForwardedServer, rw.Hostname)
+	}
+
+	// Remove hop-by-hop headers to the backend.  Especially important is "Connection" because we want a persistent
+	// connection, regardless of what the client sent to us.
+	RemoveHeaders(req.Header, HopHeaders...)
+}
+
+func RemoveHeaders(headers http.Header, names ...string) {
+	for _, h := range names {
+		headers.Del(h)
+	}
 }
 
 // NewMux returns an initialized multiplexor
 func NewMux() *Mux {
-	return &Mux{routes: make(map[string][]*PatternHandler), roundTripper: http.DefaultTransport}
+	mux := &Mux{routes: make(map[string][]*PatternHandler), roundTripper: http.DefaultTransport}
+	if mux.rewriter == nil {
+		h, err := os.Hostname()
+		if err != nil {
+			h = "localhost"
+		}
+		mux.rewriter = &HeaderRewriter{TrustForwardHeader: true, Hostname: h}
+	}
+	return mux
 }
 
 // Add registers the address of a backend service as a handler for an HTTP
@@ -271,7 +339,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// Make new request copy old stuff over
-	response, err := mux.roundTripper.RoundTrip(generateInnerRequest(request, address))
+	response, err := mux.roundTripper.RoundTrip(mux.generateInnerRequest(request, address))
 	// Execute request
 	//response, err := http.DefaultClient.Do(innerRequest)
 	if err != nil {
@@ -329,7 +397,7 @@ func CopyURL(i *url.URL) *url.URL {
 	return &out
 }
 
-func generateInnerRequest(request *http.Request, address string) *http.Request {
+func (mux *Mux) generateInnerRequest(request *http.Request, address string) *http.Request {
 	innerRequest := new(http.Request)
 	*innerRequest = *request // includes shallow copies of maps, but we handle this below
 	innerRequest.URL = CopyURL(request.URL)
@@ -341,6 +409,9 @@ func generateInnerRequest(request *http.Request, address string) *http.Request {
 	innerRequest.Header = make(http.Header)
 	innerRequest.Close = false
 	CopyHeaders(innerRequest.Header, request.Header)
+	if mux.rewriter != nil {
+		mux.rewriter.Rewrite(innerRequest)
+	}
 	return innerRequest
 }
 
