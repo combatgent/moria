@@ -142,7 +142,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	response, err := http.DefaultClient.Do(innerRequest)
 	defer response.Body.Close()
 	if err != nil {
-		log.Printf("____________________________ INTERNAL ERROR _______________________________\n%+v", err)
+		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
 		// TODO: Add JSON response here for UI
 		writer.WriteHeader(http.StatusInternalServerError)
 		writer.Header().Set("Content-Type", "application/json")
@@ -161,6 +161,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	body := bytes.NewBufferString("")
 	body.ReadFrom(response.Body)
 	writer.Write(body.Bytes())
+
 }
 
 // CopyURL provides update safe copy by avoiding shallow copying User field
