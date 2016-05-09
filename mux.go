@@ -329,6 +329,7 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 // ServeHTTP dispatches the request to the backend service whose pattern most
 // closely matches the request URL.
 func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	log.Printf("\n>\tRecieved Request: %v %v%v", request.Method, request.Host, request.URL.String())
 	start := time.Now().UTC()
 	// Create address string
 	var address string
@@ -412,6 +413,7 @@ func (mux *Mux) generateInnerRequest(request *http.Request, address string) *htt
 	if mux.rewriter != nil {
 		mux.rewriter.Rewrite(innerRequest)
 	}
+	log.Printf("\n>\tExecuting Request: %v %v%v", innerRequest.Method, innerRequest.Host, innerRequest.URL.String())
 	return innerRequest
 }
 
