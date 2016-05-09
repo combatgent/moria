@@ -1,14 +1,17 @@
 package moria
 
 import (
-	"bytes"
 	"errors"
+	"io"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/coreos/etcd/client"
 )
@@ -25,19 +28,155 @@ type PatternHandler struct {
 	Addresses []string `json:"addresses"`
 }
 
+// OXY UTILS COMPAT TESTING
+const (
+	XForwardedProto    = "X-Forwarded-Proto"
+	XForwardedFor      = "X-Forwarded-For"
+	XForwardedHost     = "X-Forwarded-Host"
+	XForwardedServer   = "X-Forwarded-Server"
+	Connection         = "Connection"
+	KeepAlive          = "Keep-Alive"
+	ProxyAuthenticate  = "Proxy-Authenticate"
+	ProxyAuthorization = "Proxy-Authorization"
+	Te                 = "Te" // canonicalized version of "TE"
+	Trailers           = "Trailers"
+	TransferEncoding   = "Transfer-Encoding"
+	Upgrade            = "Upgrade"
+	ContentLength      = "Content-Length"
+)
+
+type handlerContext struct {
+	errHandler ErrorHandler
+	log        Logger
+}
+type ErrorHandler interface {
+	ServeHTTP(w http.ResponseWriter, req *http.Request, err error)
+}
+
+var DefaultHandler ErrorHandler = &StdHandler{}
+
+type StdHandler struct {
+}
+
+func (e *StdHandler) ServeHTTP(w http.ResponseWriter, req *http.Request, err error) {
+	statusCode := http.StatusInternalServerError
+	if e, ok := err.(net.Error); ok {
+		if e.Timeout() {
+			statusCode = http.StatusGatewayTimeout
+		} else {
+			statusCode = http.StatusBadGateway
+		}
+	} else if err == io.EOF {
+		statusCode = http.StatusBadGateway
+	}
+	w.WriteHeader(statusCode)
+	w.Write([]byte(http.StatusText(statusCode)))
+}
+
+type ErrorHandlerFunc func(http.ResponseWriter, *http.Request, error)
+
+// ServeHTTP calls f(w, r).
+func (f ErrorHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request, err error) {
+	f(w, r, err)
+}
+
+var NullLogger Logger = &NOPLogger{}
+
+// Logger defines a simple logging interface
+type Logger interface {
+	Infof(format string, args ...interface{})
+	Warningf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+}
+
+type FileLogger struct {
+	info  *log.Logger
+	warn  *log.Logger
+	error *log.Logger
+}
+
+func NewFileLogger(w io.Writer, lvl LogLevel) *FileLogger {
+	l := &FileLogger{}
+	flag := log.Ldate | log.Ltime | log.Lmicroseconds
+	if lvl <= INFO {
+		l.info = log.New(w, "INFO: ", flag)
+	}
+	if lvl <= WARN {
+		l.warn = log.New(w, "WARN: ", flag)
+	}
+	if lvl <= ERROR {
+		l.error = log.New(w, "ERR: ", flag)
+	}
+	return l
+}
+
+func (f *FileLogger) Infof(format string, args ...interface{}) {
+	if f.info == nil {
+		return
+	}
+	f.info.Printf(format, args...)
+}
+
+func (f *FileLogger) Warningf(format string, args ...interface{}) {
+	if f.warn == nil {
+		return
+	}
+	f.warn.Printf(format, args...)
+}
+
+func (f *FileLogger) Errorf(format string, args ...interface{}) {
+	if f.error == nil {
+		return
+	}
+	f.error.Printf(format, args...)
+}
+
+type NOPLogger struct {
+}
+
+func (*NOPLogger) Infof(format string, args ...interface{}) {
+
+}
+func (*NOPLogger) Warningf(format string, args ...interface{}) {
+}
+
+func (*NOPLogger) Errorf(format string, args ...interface{}) {
+}
+
+func (*NOPLogger) Info(string) {
+
+}
+func (*NOPLogger) Warning(string) {
+}
+
+func (*NOPLogger) Error(string) {
+}
+
+type LogLevel int
+
+const (
+	INFO = iota
+	WARN
+	ERROR
+)
+
+//
+
 // Mux is an HTTP request multiplexer.  It matches the URL of
 // each incoming request against a list of registered patterns to find the
 // service that can respond to it and proxies the request to the appropriate
 // backend.  Pattern matching logic is based on pat.go.
 // ** FROM https://github.com/jkakar/switchboard
 type Mux struct {
-	rw     sync.RWMutex                 // Synchronize access to routes map.
-	routes map[string][]*PatternHandler // Patterns mapped to backend services.
+	rw           sync.RWMutex                 // Synchronize access to routes map.
+	routes       map[string][]*PatternHandler // Patterns mapped to backend services.
+	roundTripper http.RoundTripper
+	ctx          handlerContext
 }
 
 // NewMux returns an initialized multiplexor
 func NewMux() *Mux {
-	return &Mux{routes: make(map[string][]*PatternHandler)}
+	return &Mux{routes: make(map[string][]*PatternHandler), roundTripper: http.DefaultTransport}
 }
 
 // Add registers the address of a backend service as a handler for an HTTP
@@ -122,9 +261,7 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 // ServeHTTP dispatches the request to the backend service whose pattern most
 // closely matches the request URL.
 func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	go func(request *http.Request) {
-		log.Printf("\n>\tSERVING REQUEST:%v %v", request.Method, request.URL.String())
-	}(request)
+	start := time.Now().UTC()
 	// Create address string
 	var address string
 	// Attempt to match the request against registered patterns and addresses.
@@ -133,37 +270,53 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		log.Printf("%v", pDisappointedInline("Invalid URL Pattern"))
 		return
 	}
-	go func(request *http.Request) {
-		log.Printf("\n>\tSERVING REQUEST:%v %v", request.Method, request.URL.String())
-	}(request)
 	// Make new request copy old stuff over
-	innerRequest := generateInnerRequest(request, address)
+	response, err := mux.roundTripper.RoundTrip(generateInnerRequest(request, address))
 	// Execute request
-	response, err := http.DefaultClient.Do(innerRequest)
-	if response.Body != nil {
-		defer response.Body.Close()
-	}
+	//response, err := http.DefaultClient.Do(innerRequest)
+	defer response.Body.Close()
+
 	if err != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
-		// TODO: Add JSON response here for UI
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Header().Set("Content-Type", "application/json")
-		jsonStr := `[{"error":"500 Internal Server Error"},{"status":500}]`
-		writer.Write([]byte(jsonStr))
+		mux.ctx.log.Errorf("Error forwarding to %v, err: %v", request.URL, err)
+		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
 	}
+	if request.TLS != nil {
+		mux.ctx.log.Infof("Round trip: %v, code: %v, duration: %v tls:version: %x, tls:resume:%t, tls:csuite:%x, tls:server:%v",
+			request.URL, response.StatusCode, time.Now().UTC().Sub(start),
+			request.TLS.Version,
+			request.TLS.DidResume,
+			request.TLS.CipherSuite,
+			request.TLS.ServerName)
+	} else {
+		mux.ctx.log.Infof("Round trip: %v, code: %v, duration: %v",
+			request.URL, response.StatusCode, time.Now().UTC().Sub(start))
+	}
 	// Relay the response from the backend service back to the client.
-	for header, values := range response.Header {
-		for _, value := range values {
-			log.Printf("\n>\tHEADER: %v\n>\tVALUE: %v", header, value)
-			writer.Header().Add(header, value)
+	CopyHeaders(writer.Header(), response.Header)
+	writer.WriteHeader(response.StatusCode)
+	written, err := io.Copy(writer, response.Body)
+	defer response.Body.Close()
+	if err != nil {
+		mux.ctx.log.Errorf("Error copying upstream response Body: %v", err)
+		mux.ctx.errHandler.ServeHTTP(writer, request, err)
+		return
+	}
+
+	if written != 0 {
+		writer.Header().Set(ContentLength, strconv.FormatInt(written, 10))
+	}
+
+}
+
+//CopyHeaders adds headers to a response
+func CopyHeaders(dst, src http.Header) {
+	for k, vv := range src {
+		for _, v := range vv {
+			dst.Add(k, v)
 		}
 	}
-	writer.WriteHeader(response.StatusCode)
-	body := bytes.NewBufferString("")
-	body.ReadFrom(response.Body)
-	writer.Write(body.Bytes())
-
 }
 
 // CopyURL provides update safe copy by avoiding shallow copying User field
