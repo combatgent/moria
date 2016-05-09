@@ -342,7 +342,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Create address string
 	var address string
 	// Attempt to match the request against registered patterns and addresses.
-	err := findHost(mux, request, writer, &address)
+	err = findHost(mux, request, writer, &address)
 	if err != nil {
 		log.Printf("%v", pDisappointedInline("Invalid URL Pattern"))
 		return
