@@ -274,8 +274,6 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	response, err := mux.roundTripper.RoundTrip(generateInnerRequest(request, address))
 	// Execute request
 	//response, err := http.DefaultClient.Do(innerRequest)
-	defer response.Body.Close()
-
 	if err != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
 		mux.ctx.log.Errorf("Error forwarding to %v, err: %v", request.URL, err)
