@@ -382,17 +382,15 @@ func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 	CopyHeaders(writer.Header(), response.Header)
 	writer.WriteHeader(response.StatusCode)
 	written, copyErr := io.Copy(writer, response.Body)
-	defer response.Body.Close()
 	if copyErr != nil {
 		mux.ctx.log.Errorf("Error copying upstream response Body: %v", err)
 		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
 	}
-
 	if written != 0 {
 		writer.Header().Set(ContentLength, strconv.FormatInt(written, 10))
 	}
-
+	defer response.Body.Close()
 }
 
 //CopyHeaders adds headers to a response
