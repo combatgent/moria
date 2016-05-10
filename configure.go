@@ -32,6 +32,7 @@ func Configure(e string) *Exchange {
 		// 	}
 		// }()
 		// log.Print("Watching for service configuration changes in etcd")
+
 		exchange.Watch()
 	}()
 	return exchange

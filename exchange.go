@@ -147,7 +147,6 @@ func (exchange *Exchange) Watch() {
 			log.Printf("\n>RECEIVED ERROR RESPONDING TO:%v\n>\tFOR KEY:%v\n>\tERROR: %+v", response.Action, response.PrevNode.Key, err)
 			continue
 		}
-
 		switch response.Action {
 		case "set", "update", "create", "compareAndSwap":
 			if EnvMatch(response.Node.Key) {
@@ -243,14 +242,6 @@ func (exchange *Exchange) Watch() {
 			}
 		}
 		go func(exchange *Exchange) {
-			// for _, method := range []string{"GET", "PUT", "POST", "DELETE", "PATCH"} {
-			// 	if arr, ok := exchange.mux.routes[method]; ok {
-			// 		for _, handler := range arr {
-			// 			log.Printf("\n>\tHANDLER: %+v\n", handler)
-			// 		}
-			// 		log.Printf("\n>\tNUMBER OF CURRENTLY REGISTERED %v PATTERNS: %v\n", method, len(arr))
-			// 	}
-			// }
 			address, key := gatewayNamespace()
 			opts := gatewaySetOpts()
 			_, err := exchange.client.Set(context.Background(), key, address, opts)
@@ -307,11 +298,11 @@ func gatewayNamespace() (string, string) {
 		}
 		host = string(outputHost)
 		uName = "/gateway/environments/" + os.Getenv("VINE_ENV") + "/" + string(outputUName)
-		log.Printf("\n>\tUNAME:\n>\t%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
+		log.Printf("\n>\tUNAME: %v, HOST ADDRESS: %v\n", uName, host)
 	} else {
 		host = "127.0.0.1"
 		uName = "/gateway/environments/" + os.Getenv("VINE_ENV") + "/" + string(outputUName)
-		log.Printf("\n>\tUNAME:\n>\t%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
+		log.Printf("\n>\tUNAME: %v, HOST ADDRESS: %v\n", uName, host)
 	}
 	return strings.Join([]string{host, ":", os.Getenv("PORT")}, ""), uName
 }
