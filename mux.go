@@ -337,6 +337,10 @@ func (mux *Mux) Remove(method, pattern, address, service string) {
 // ServeHTTP dispatches the request to the backend service whose pattern most
 // closely matches the request URL.
 func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	mux.serveHTTP(writer, request)
+}
+
+func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 	dump, err := httputil.DumpRequest(request, true)
 	if err != nil {
 		http.Error(writer, fmt.Sprint(err), http.StatusInternalServerError)
