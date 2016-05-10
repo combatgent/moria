@@ -280,7 +280,7 @@ func getIPAddress() string {
 	for _, a := range addrs {
 		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				os.Stdout.WriteString(ipnet.IP.String() + "\n")
+				//os.Stdout.WriteString(ipnet.IP.String() + "\n")
 				return ipnet.IP.String()
 			}
 		}
