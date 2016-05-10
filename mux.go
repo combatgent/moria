@@ -416,7 +416,7 @@ func (mux *Mux) generateInnerRequest(request *http.Request, u *url.URL, address 
 	innerRequest := new(http.Request)
 	*innerRequest = *request // includes shallow copies of maps, but we handle this below
 	innerRequest.URL = CopyURL(request.URL)
-	innerRequest.URL.Scheme = u.Scheme
+	innerRequest.URL.Scheme = "http"
 	innerRequest.URL.Host = address
 	innerRequest.Host = address
 	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
