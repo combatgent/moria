@@ -343,7 +343,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	log.Printf("Recieved: %q", dump)
+	log.Printf("Recieved: %+v", dump)
 	start := time.Now().UTC()
 	// Create address string
 	var address string
@@ -432,7 +432,7 @@ func (mux *Mux) generateInnerRequest(request *http.Request, address string) *htt
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Executing: %q", dump)
+	log.Printf("Executing: %+v", dump)
 	return innerRequest
 }
 
