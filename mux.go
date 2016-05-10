@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -390,19 +391,21 @@ func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 	if written != 0 {
 		writer.Header().Set(ContentLength, strconv.FormatInt(written, 10))
 	}
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("%s", err)
+	}
+	log.Printf("%s\n", string(contents))
 	defer response.Body.Close()
 }
 
 //CopyHeaders adds headers to a response
 func CopyHeaders(dst, src http.Header) {
-	log.Println("{{{{{{{{{{{{{{{{{{{{{{{{{{{_______________________________________________________________________}}}}}}}}}}}}}}}}}}}}}}}}}}}")
 	for k, vv := range src {
 		for _, v := range vv {
-			log.Println("\nHeader:", k, "\nValue:", v)
 			dst.Add(k, v)
 		}
 	}
-	log.Println("{{{{{{{{{{{{{{{{{{{{{{{{{{{_______________________________________________________________________}}}}}}}}}}}}}}}}}}}}}}}}}}}")
 }
 
 // CopyURL provides update safe copy by avoiding shallow copying User field

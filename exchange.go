@@ -151,9 +151,7 @@ func (exchange *Exchange) Watch() {
 		switch response.Action {
 		case "set", "update", "create", "compareAndSwap":
 			if EnvMatch(response.Node.Key) {
-				log.Printf("\n>\tWatcher Matched Environment: %v", response.Node.Key)
 				if strings.Compare("routes", Tail(response.Node.Key)) == 0 {
-					log.Printf("\n>\tWatcher Matched Routes*: %v", response.Node.Key)
 					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
 					CheckEtcdErrors(err)
 					environ := resp.Node
@@ -162,10 +160,8 @@ func (exchange *Exchange) Watch() {
 					for _, config := range environ.Nodes {
 						if strings.Compare(Tail(config.Key), "routes") == 0 {
 							serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
-							log.Printf("\n>\tWatcher Loaded Routes *: %v", config.Key)
 						} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
 							for _, host := range config.Nodes {
-								log.Printf("\n>\tWatcher Loaded Machine IPs*: %v", config.Key)
 								if strings.Compare(host.Value, "") != 0 {
 									serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
 								}
@@ -179,10 +175,8 @@ func (exchange *Exchange) Watch() {
 						exchange.Register(serviceRecord)
 					}
 				} else if strings.Compare("hosts", TailMinusOne(response.Node.Key)) == 0 {
-					log.Printf("\n>\tWatcher Matched Hosts-: %v", response.Node.Key)
 					name := Name(response.Node.Key)
 					if serviceRoutes, ok := exchange.serviceNameRoutes[name]; ok {
-						log.Printf("\n>\tWatcher Loaded Routes From Hash-: %v", response.Node.Key)
 						serviceRecord := exchange.load(serviceRoutes, name)
 						serviceRecord.ID = Tail(response.Node.Key)
 						serviceRecord.Address = response.Node.Value
@@ -196,10 +190,8 @@ func (exchange *Exchange) Watch() {
 						var serviceMachines []*Machine
 						for _, config := range environ.Nodes {
 							if strings.Compare(Tail(config.Key), "routes") == 0 {
-								log.Printf("\n>\tWatcher Loaded Routes From Etcd-: %v", response.Node.Key)
 								serviceRecord = exchange.load(config.Value, Name(response.Node.Key))
 							} else if strings.Compare(Tail(config.Key), "hosts") == 0 {
-								log.Printf("\n>\tMatched Hosts: %v", config.Key)
 								for _, host := range config.Nodes {
 									if strings.Compare(host.Value, "") != 0 {
 										serviceMachines = append(serviceMachines, &Machine{Tail(host.Key), host.Value})
@@ -218,9 +210,7 @@ func (exchange *Exchange) Watch() {
 			}
 		case "delete", "expire", "compareAndDelete":
 			if EnvMatch(response.PrevNode.Key) {
-				log.Printf("\n>\tWatcher Matched Environment@: %v", response.PrevNode.Key)
 				if strings.Compare("routes", Tail(response.PrevNode.Key)) == 0 {
-					log.Printf("\n>\tWatcher Matched Routes@: %v", response.PrevNode.Key)
 					resp, err := exchange.client.Get(context.TODO(), EnvKey(response.PrevNode.Key), EtcdGetOptions())
 					CheckEtcdErrors(err)
 					environ := resp.Node
@@ -246,7 +236,6 @@ func (exchange *Exchange) Watch() {
 						}
 					}
 				} else if strings.Compare("hosts", TailMinusOne(response.Node.Key)) == 0 {
-					log.Printf("\n>\tWatcher Matched Hosts@: %v\n>\tChecking Map With:%v", response.PrevNode.Key, Tail(response.PrevNode.Key))
 					if service, ok := exchange.services[Tail(response.PrevNode.Key)]; ok {
 						exchange.Unregister(service)
 					}
@@ -318,11 +307,11 @@ func gatewayNamespace() (string, string) {
 		}
 		host = string(outputHost)
 		uName = "/gateway/environments/" + os.Getenv("VINE_ENV") + "/" + string(outputUName)
-		log.Printf("\n>\tUNAME:\n>%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
+		log.Printf("\n>\tUNAME:\n>\t%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
 	} else {
 		host = "127.0.0.1"
 		uName = "/gateway/environments/" + os.Getenv("VINE_ENV") + "/" + string(outputUName)
-		log.Printf("\n>\tUNAME:\n>%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
+		log.Printf("\n>\tUNAME:\n>\t%v\n>\tHOST ADDRESS:\n>\t%v", uName, host)
 	}
 	return strings.Join([]string{host, ":", os.Getenv("PORT")}, ""), uName
 }
