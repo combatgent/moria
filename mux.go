@@ -343,7 +343,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	log.Printf("Recieved: %+v", dump)
+	log.Printf("Recieved: %q", dump)
 	start := time.Now().UTC()
 	// Create address string
 	var address string
@@ -359,8 +359,8 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Execute request
 	//response, err := http.DefaultClient.Do(innerRequest)
 	if roundtripErr != nil {
-		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
-		log.Printf("Error forwarding to %v, err: %v\nGenerated Request: %v", request.URL.String(), roundtripErr, reqq.URL.String())
+		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", roundtripErr)
+		mux.ctx.log.Errorf("Error forwarding to %v, err: %v\nGenerated Request: %v", request.URL.String(), roundtripErr, reqq.URL.String())
 		mux.ctx.errHandler.ServeHTTP(writer, request, roundtripErr)
 		return
 	}
@@ -377,9 +377,9 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Relay the response from the backend service back to the client.
 	CopyHeaders(writer.Header(), response.Header)
 	writer.WriteHeader(response.StatusCode)
-	written, err := io.Copy(writer, response.Body)
+	written, copyErr := io.Copy(writer, response.Body)
 	defer response.Body.Close()
-	if err != nil {
+	if copyErr != nil {
 		mux.ctx.log.Errorf("Error copying upstream response Body: %v", err)
 		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
@@ -418,6 +418,7 @@ func (mux *Mux) generateInnerRequest(request *http.Request, u *url.URL, address 
 	innerRequest.URL = CopyURL(request.URL)
 	innerRequest.URL.Scheme = u.Scheme
 	innerRequest.URL.Host = address
+	innerRequest.Host = address
 	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
 	innerRequest.URL.RawQuery = request.URL.RawQuery
 	innerRequest.RequestURI = ""
@@ -431,7 +432,7 @@ func (mux *Mux) generateInnerRequest(request *http.Request, u *url.URL, address 
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Executing: %+v", dump)
+	log.Printf("Executing: %q", dump)
 	return innerRequest
 }
 
