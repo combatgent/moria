@@ -364,20 +364,19 @@ func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Execute request
 	//response, err := http.DefaultClient.Do(innerRequest)
 	if roundtripErr != nil {
-		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", roundtripErr)
 		mux.ctx.log.Errorf("Error forwarding to %v, err: %v\nGenerated Request: %v", request.URL.String(), roundtripErr, reqq.URL.String())
 		mux.ctx.errHandler.ServeHTTP(writer, request, roundtripErr)
 		return
 	}
 	if request.TLS != nil {
-		mux.ctx.log.Infof("Round trip: %v, code: %v, duration: %v tls:version: %x, tls:resume:%t, tls:csuite:%x, tls:server:%v",
-			request.URL, response.StatusCode, time.Now().UTC().Sub(start),
+		mux.ctx.log.Infof("HOST: %v,ROUND TRIP: %v, CODE: %v, DURATION: %v TLS:VERSION: %x, TLS:RESUME:%t, TLS:CSUITE:%x, TLS:SERVER:%v",
+			request.Host, request.URL, response.StatusCode, time.Now().UTC().Sub(start),
 			request.TLS.Version,
 			request.TLS.DidResume,
 			request.TLS.CipherSuite,
 			request.TLS.ServerName)
 	} else {
-		log.Printf("Round trip: %v, code: %v, duration: %v", request.URL, response.StatusCode, time.Now().UTC().Sub(start))
+		log.Printf("HOST: %v,ROUND TRIP: %v, CODE: %v, DURATION: %v", request.Host, request.URL, response.StatusCode, time.Now().UTC().Sub(start))
 	}
 	// Relay the response from the backend service back to the client.
 	CopyHeaders(writer.Header(), response.Header)
