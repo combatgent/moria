@@ -360,8 +360,8 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	//response, err := http.DefaultClient.Do(innerRequest)
 	if roundtripErr != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
-		log.Printf("Error forwarding to %v, err: %v\nGenerated Request: %v", request.URL.String(), err, reqq.URL.String())
-		mux.ctx.errHandler.ServeHTTP(writer, request, err)
+		log.Printf("Error forwarding to %v, err: %v\nGenerated Request: %v", request.URL.String(), roundtripErr, reqq.URL.String())
+		mux.ctx.errHandler.ServeHTTP(writer, request, roundtripErr)
 		return
 	}
 	if request.TLS != nil {
