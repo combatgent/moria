@@ -395,7 +395,7 @@ func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Printf("%s", err)
 	}
-	log.Printf("%s\n", string(contents))
+	log.Printf("\nCONTENTS:\n%s\n", string(contents))
 	defer response.Body.Close()
 }
 
