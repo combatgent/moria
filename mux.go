@@ -348,18 +348,19 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Create address string
 	var address string
 	// Attempt to match the request against registered patterns and addresses.
-	err = findHost(mux, request, writer, &address)
-	if err != nil {
+	patternErr := findHost(mux, request, writer, &address)
+	if patternErr != nil {
 		log.Printf("%v", pDisappointedInline("Invalid URL Pattern"))
 		return
 	}
 	// Make new request copy old stuff over
-	response, err := mux.roundTripper.RoundTrip(mux.generateInnerRequest(request, address))
+	reqq := mux.generateInnerRequest(request, address)
+	response, roundtripErr := mux.roundTripper.RoundTrip(reqq)
 	// Execute request
 	//response, err := http.DefaultClient.Do(innerRequest)
-	if err != nil {
+	if roundtripErr != nil {
 		log.Printf("____________________________ INTERNAL ERROR _______________________________\n***************************************\n>\t%+v\n************************************\n", err)
-		log.Printf("Error forwarding to %v, err: %v", request.URL, err)
+		log.Printf("Error forwarding to %v, err: %v\nGenerated Request: %v", request.URL.String(), err, reqq.URL.String())
 		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
 	}
