@@ -354,7 +354,7 @@ func (mux *Mux) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// Make new request copy old stuff over
-	reqq := mux.generateInnerRequest(request, address)
+	reqq := mux.generateInnerRequest(request, request.URL, address)
 	response, roundtripErr := mux.roundTripper.RoundTrip(reqq)
 	// Execute request
 	//response, err := http.DefaultClient.Do(innerRequest)
@@ -412,13 +412,12 @@ func CopyURL(i *url.URL) *url.URL {
 	return &out
 }
 
-func (mux *Mux) generateInnerRequest(request *http.Request, address string) *http.Request {
+func (mux *Mux) generateInnerRequest(request *http.Request, u *url.URL, address string) *http.Request {
 	innerRequest := new(http.Request)
 	*innerRequest = *request // includes shallow copies of maps, but we handle this below
 	innerRequest.URL = CopyURL(request.URL)
-	innerRequest.URL.Scheme = "http"
+	innerRequest.URL.Scheme = u.Scheme
 	innerRequest.URL.Host = address
-	innerRequest.Host = address
 	innerRequest.URL.Path = strings.Replace(request.URL.Path, "/api", "", 1)
 	innerRequest.URL.RawQuery = request.URL.RawQuery
 	innerRequest.RequestURI = ""
