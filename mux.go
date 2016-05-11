@@ -74,7 +74,8 @@ func (e *StdHandler) ServeHTTP(w http.ResponseWriter, req *http.Request, err err
 		statusCode = http.StatusBadGateway
 	}
 	w.WriteHeader(statusCode)
-	w.Write([]byte(http.StatusText(statusCode)))
+	js := "{\"error\":\"" + http.StatusText(statusCode) + "\"}"
+	w.Write([]byte(js))
 }
 
 type ErrorHandlerFunc func(http.ResponseWriter, *http.Request, error)
