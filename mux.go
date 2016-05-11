@@ -288,6 +288,7 @@ func handleDuplicates(handler *PatternHandler, method string, pattern string, ad
 		}
 	}
 	// If address doesnt exist for pattern append to handler
+	log.Printf("\n\n\n\n\n\n\n\n\n\n\n\nDifferent Address:\nService>\t%v\nAddress>\t%v\nOther addresses>\t%v\n\n\n\n\n\n", service, address, handler.Addresses)
 	handler.Addresses = append(handler.Addresses, address)
 	return
 }
