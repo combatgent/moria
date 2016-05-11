@@ -275,7 +275,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 		}
 	}
 	// Add a new pattern handler for the pattern and address.
-	log.Printf("\n>**************************** New Service Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Route Directed To:"), pBold(strings.Title(strings.Replace(service, "-", " ", -1))), pSuccessInline("Service Located At:"), address)
+	log.Printf("\n>**************************** New Service Pattern Dicovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Machine Name:"), service, "Service Name:", serviceRecord.Name, pSuccessInline("Service Located At:"), address)
 	addresses := []string{address}
 	handler := PatternHandler{Pattern: pattern, Addresses: addresses}
 	mux.routes[method] = append(handlers, &handler)
@@ -288,7 +288,7 @@ func handleDuplicates(handler *PatternHandler, method string, pattern string, ad
 		}
 	}
 	// If address doesnt exist for pattern append to handler
-	log.Printf("\n\n\n\n\n\n\n\n\n\n\n\nDifferent Address:\nService>\t%+v\nMachine>\t%v\nPattern>\t%v\nAddress>\t%v\nOther addresses>\t%v\n\n\n\n\n\n", serviceRecord, service, handler.Pattern, address, handler.Addresses)
+	log.Printf("\n\n\n\n\n\n\n\n>**************************** Additional Machine Discovered ****************************\n>\t%v %v %v\n>\t%v %v\n>\t%v %v\n>\t%v %v\n", pSuccessInline("Registering Route:"), pMethod(method), pattern, pSuccessInline("Machine Name:"), service, "Service Name:", serviceRecord.Name, pSuccessInline("Service Located At:"), address)
 	handler.Addresses = append(handler.Addresses, address)
 	return
 }
