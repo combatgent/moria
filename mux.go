@@ -259,7 +259,7 @@ func NewMux() *Mux {
 
 // Add registers the address of a backend service as a handler for an HTTP
 // method and URL pattern.
-func (mux *Mux) Add(method string, pattern string, address string, service string, c client.KeysAPI) {
+func (mux *Mux) Add(method string, pattern string, address string, service string, serviceRecord *ServiceRecord, c client.KeysAPI) {
 	mux.rw.Lock()
 	defer mux.rw.Unlock()
 	handlers, present := mux.routes[method]
@@ -270,7 +270,7 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	// Search for duplicates.
 	for _, handler := range handlers {
 		if pattern == handler.Pattern {
-			handleDuplicates(handler, method, pattern, address, service, c)
+			handleDuplicates(handler, method, pattern, address, service, serviceRecord, c)
 			return
 		}
 	}
@@ -281,14 +281,14 @@ func (mux *Mux) Add(method string, pattern string, address string, service strin
 	mux.routes[method] = append(handlers, &handler)
 }
 
-func handleDuplicates(handler *PatternHandler, method string, pattern string, address string, service string, c client.KeysAPI) {
+func handleDuplicates(handler *PatternHandler, method string, pattern string, address string, service string, serviceRecord *ServiceRecord, c client.KeysAPI) {
 	for _, existingAddress := range handler.Addresses {
 		if strings.Compare(address, existingAddress) == 0 {
 			return
 		}
 	}
 	// If address doesnt exist for pattern append to handler
-	log.Printf("\n\n\n\n\n\n\n\n\n\n\n\nDifferent Address:\nService>\t%v\nAddress>\t%v\nOther addresses>\t%v\n\n\n\n\n\n", service, address, handler.Addresses)
+	log.Printf("\n\n\n\n\n\n\n\n\n\n\n\nDifferent Address:\nService>\t%+v\nMachine>\t%v\nPattern>\t%v\nAddress>\t%v\nOther addresses>\t%v\n\n\n\n\n\n", serviceRecord, service, address, handler.Addresses)
 	handler.Addresses = append(handler.Addresses, address)
 	return
 }
