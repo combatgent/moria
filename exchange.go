@@ -180,6 +180,15 @@ func (exchange *Exchange) Watch() {
 						serviceRecord.ID = Tail(response.Node.Key)
 						serviceRecord.Address = response.Node.Value
 						serviceRecord.Name = name
+						if strings.Compare(response.Action, "update") == 0 {
+							if response.PrevNode != nil && response.Node != nil {
+								if strings.Compare(response.Node.Value, response.PrevNode.Value) != 0 {
+									if service, ok := exchange.services[Tail(response.PrevNode.Key)]; ok {
+										exchange.Unregister(service)
+									}
+								}
+							}
+						}
 						exchange.Register(serviceRecord)
 					} else {
 						resp, err := exchange.client.Get(context.TODO(), EnvKey(response.Node.Key), EtcdGetOptions())
