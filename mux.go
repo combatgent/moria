@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -383,14 +382,19 @@ func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 	// Relay the response from the backend service back to the client.
 	CopyHeaders(writer.Header(), response.Header)
 	writer.WriteHeader(response.StatusCode)
+	responseDump, respDumpErr := httputil.DumpResponse(response, true)
+	if respDumpErr != nil {
+		log.Printf("\n>>\tRESPONSE CONTENTS:\n>> for %v %v(original[ %v %v]):\n>>\t %v\n", reqq.Method, reqq.URL, request.Method, request.URL, respDumpErr)
+	} else {
+		log.Printf("\n>>\tRESPONSE CONTENTS:\n>> for %v %v(original[ %v %v]):\n>>\t %v\n", reqq.Method, reqq.URL, request.Method, request.URL, string(responseDump))
+	}
 	written, copyErr := io.Copy(writer, response.Body)
 	if copyErr != nil {
 		mux.ctx.log.Errorf("Error copying upstream response Body: %v", err)
 		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
 	}
-	contents, err := ioutil.ReadAll(response.Body)
-	log.Printf("\n>>\tRESPONSE CONTENTS:\n>> for %v %v(original[ %v %v]):\n>>\t %v\n", reqq.Method, reqq.URL, request.Method, request.URL, string(contents))
+
 	if written != 0 {
 		writer.Header().Set(ContentLength, strconv.FormatInt(written, 10))
 	}
