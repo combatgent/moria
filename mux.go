@@ -389,14 +389,16 @@ func (mux *Mux) serveHTTP(writer http.ResponseWriter, request *http.Request) {
 		mux.ctx.errHandler.ServeHTTP(writer, request, err)
 		return
 	}
+	contents, err := ioutil.ReadAll(response.Body)
+	log.Printf("\n>>\tRESPONSE CONTENTS:\n>> for %v %v(original[ %v %v]):\n>>\t %v\n", reqq.Method, reqq.URL, request.Method, request.URL, string(contents))
 	if written != 0 {
 		writer.Header().Set(ContentLength, strconv.FormatInt(written, 10))
 	}
-	contents, err := ioutil.ReadAll(response.Body)
+
 	if err != nil {
 		log.Printf("%s", err)
 	}
-	log.Printf("\nCONTENTS:\n%s\n", string(contents))
+
 	defer response.Body.Close()
 }
 
